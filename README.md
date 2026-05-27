@@ -1,37 +1,40 @@
 # Hermes Agent Docker Installer
 
-[![CI](https://github.com/lunaticbugbear/hermes-docker-installer/actions/workflows/ci.yml/badge.svg)](https://github.com/lunaticbugbear/hermes-docker-installer/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<p align="center">
+  <strong>Run Hermes Agent in Docker with one installer.</strong><br>
+  Clean host. Persistent workspace. Local API server. Linux, macOS, WSL, Git Bash, and Windows PowerShell.
+</p>
 
-Public-quality cross-platform installer for running Hermes Agent inside Docker.
-One command to install, configure, update, and manage Hermes without polluting the host Python environment.
+<p align="center">
+  <a href="https://github.com/lunaticbugbear/hermes-docker-installer/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/lunaticbugbear/hermes-docker-installer/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+  <img alt="Docker" src="https://img.shields.io/badge/runtime-Docker-2496ED">
+  <img alt="Platforms" src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20WSL-blueviolet">
+</p>
 
-## What this repo gives you
+---
 
-- Cross-platform installer for Linux, macOS, WSL, Git Bash, and native Windows PowerShell
-- Docker-isolated Hermes runtime with persistent state
-- Auto-generated local API server config and bearer key
-- Optional browser tooling layer with Playwright + Chromium
-- Helper commands for start, stop, logs, shell, CLI, update, reset, URL, and key retrieval
-- Explicit uninstall scripts for Linux/macOS/WSL and Windows PowerShell
-- CI that checks shell syntax, PowerShell parsing, generated compose config, docs sanity, and a Docker smoke test
+## Why this exists
 
-## Install
+Hermes Agent is powerful, but local setup can get messy: Python versions, system packages, browser tooling, API keys, and platform differences.
+
+This repo gives you a clean Docker-based install flow:
+
+- install Hermes Agent inside a Docker image
+- keep host Python untouched
+- generate `.env`, Dockerfile, Compose file, bootstrap script, healthcheck, helper CLI, and workspace
+- persist Hermes state in a Docker volume
+- expose the Hermes API server on `127.0.0.1` by default
+- support OpenRouter, Anthropic, OpenAI, Google/Gemini, DeepSeek, and custom OpenAI-compatible endpoints
+
+---
+
+## Quick start
 
 ### Linux / macOS / WSL / Git Bash
 
-Quick run:
-
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/lunaticbugbear/hermes-docker-installer/main/install.sh)
-```
-
-Or download first:
-
-```bash
-curl -O https://raw.githubusercontent.com/lunaticbugbear/hermes-docker-installer/main/install.sh
-chmod +x install.sh
-./install.sh
 ```
 
 ### Windows PowerShell
@@ -40,108 +43,64 @@ chmod +x install.sh
 powershell -ExecutionPolicy Bypass -c "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/lunaticbugbear/hermes-docker-installer/main/install.ps1' -OutFile install.ps1; .\install.ps1"
 ```
 
-## Requirements
+The installer will ask for provider, model, port, and API key when needed.
 
-The installer is designed to bootstrap Docker when possible.
+---
 
-- Linux: tries to install/start Docker Engine
-- macOS: tries to install/start Docker Desktop
-- Windows PowerShell: tries to install/start Docker Desktop
-- WSL: treats the environment as Linux and attempts Docker Engine bootstrap inside WSL
+## Non-interactive install
 
-Important:
-- OS-level Docker installation may still require sudo/admin approval
-- Some machines may require a shell restart or re-login after Docker installation
-- If automatic Docker bootstrap fails, the installer prints the exact manual recovery path
-
-## Default behavior
-
-- Browser layer is opt-in, not default
-- Hermes version is pinnable via `HERMES_VERSION`
-- API server default port is `8642`
-- Generated API port binds to `127.0.0.1` by default
-- Provider/model can be passed via flags or selected interactively
-
-## CLI options
-
-### install.sh
-
-| Option | Description |
-|---|---|
-| `--dir PATH` | Install directory, default `~/.hermes-docker` |
-| `--provider PROVIDER` | `openrouter|anthropic|openai|google|deepseek|custom` |
-| `--model MODEL` | Model name |
-| `--port PORT` | API server port |
-| `--name NAME` | Compose project name |
-| `--no-start` | Generate/build but do not start |
-| `--browser` | Include Playwright + Chromium |
-| `--skip-build` | Generate files only |
-| `--force` | Overwrite generated files |
-| `--uninstall` | Stop stack and optionally remove data volume |
-| `--help` | Show help |
-
-### install.ps1
-
-| Option | Description |
-|---|---|
-| `-InstallDir <path>` | Install directory |
-| `-Provider <name>` | Provider selection |
-| `-Model <name>` | Model name |
-| `-Port <number>` | API server port |
-| `-ProjectName <name>` | Compose project name |
-| `-NoStart` | Generate/build but do not start |
-| `-Browser` | Include Playwright + Chromium |
-| `-SkipBuild` | Generate files only |
-| `-Force` | Overwrite generated files |
-| `-Uninstall` | Stop stack and optionally remove data volume |
-
-## Environment variables
-
-| Variable | Purpose |
-|---|---|
-| `OPENROUTER_API_KEY` | OpenRouter API key |
-| `ANTHROPIC_API_KEY` | Anthropic API key |
-| `OPENAI_API_KEY` | OpenAI API key |
-| `GOOGLE_API_KEY` | Google/Gemini API key |
-| `DEEPSEEK_API_KEY` | DeepSeek API key |
-| `CUSTOM_API_KEY` | Custom provider API key |
-| `CUSTOM_BASE_URL` | Base URL for custom provider |
-| `API_SERVER_KEY` | Optional fixed API bearer key |
-| `HERMES_NONINTERACTIVE` | `1` to skip prompts in shell installer |
-| `HERMES_VERSION` | Hermes Agent git ref/tag/branch to install |
-
-Non-interactive example:
+Useful for servers, CI, repeatable setup, or scripts.
 
 ```bash
 HERMES_NONINTERACTIVE=1 \
-OPENROUTER_API_KEY=sk-example \
-HERMES_VERSION=main \
-bash install.sh --provider openrouter --model deepseek/deepseek-v4-flash:free
+OPENROUTER_API_KEY=<OPENROUTER_API_KEY> \
+bash install.sh \
+  --provider openrouter \
+  --model deepseek/deepseek-v4-flash:free \
+  --port 8642
 ```
 
-## Installed layout
+Windows:
 
-Generated install directory:
+```powershell
+.\install.ps1 `
+  -Provider openrouter `
+  -Model deepseek/deepseek-v4-flash:free `
+  -OpenRouterApiKey "<OPENROUTER_API_KEY>" `
+  -Port 8642
+```
+
+---
+
+## What gets installed
+
+Default install directory:
 
 ```text
 ~/.hermes-docker/
-  .env
-  Dockerfile
-  docker-compose.yml
-  bootstrap.sh
-  healthcheck.sh
-  bin/hermes-docker
-  workspace/
+├── .env
+├── Dockerfile
+├── docker-compose.yml
+├── bootstrap.sh
+├── healthcheck.sh
+├── bin/
+│   └── hermes-docker
+└── workspace/
 ```
 
-Container/runtime layout:
+Runtime layout:
 
-- `/workspace` -> bind mount from host `workspace/`
-- `/root/.hermes` -> persistent Docker volume
+| Host | Container | Purpose |
+|---|---|---|
+| `~/.hermes-docker/workspace` | `/workspace` | files Hermes works on |
+| Docker volume `hermes_home` | `/root/.hermes` | Hermes config, sessions, memory |
+| `127.0.0.1:8642` | container API port | local Hermes API server |
 
-## Management commands
+---
 
-After installation:
+## Daily commands
+
+Linux / macOS / WSL:
 
 ```bash
 cd ~/.hermes-docker
@@ -155,31 +114,112 @@ cd ~/.hermes-docker
 ./bin/hermes-docker key
 ```
 
-Windows PowerShell helper:
+Windows PowerShell:
 
 ```powershell
 cd $env:USERPROFILE\.hermes-docker
 .\hermes-docker.ps1 start
-.\hermes-docker.ps1 logs
 .\hermes-docker.ps1 cli
+.\hermes-docker.ps1 logs
+.\hermes-docker.ps1 status
 ```
 
-## Browser tooling
+---
 
-By default the installer skips Playwright/Chromium to keep first install lighter.
-Enable it only when you need browser automation:
+## Options
+
+### `install.sh`
+
+| Option | Default | Description |
+|---|---:|---|
+| `--dir PATH` | `~/.hermes-docker` | install directory |
+| `--provider NAME` | `openrouter` | `openrouter`, `anthropic`, `openai`, `google`, `deepseek`, or `custom` |
+| `--model MODEL` | `deepseek/deepseek-v4-flash:free` | model name passed to Hermes |
+| `--port PORT` | `8642` | local API server port |
+| `--name NAME` | `hermes-agent` | Docker Compose project name |
+| `--browser` | off | include Playwright + Chromium |
+| `--no-start` | off | build/generate but do not start |
+| `--skip-build` | off | generate files only; no Docker build/start |
+| `--force` | off | overwrite generated files |
+| `--uninstall` | off | stop stack and optionally remove volume |
+
+### `install.ps1`
+
+| Option | Default | Description |
+|---|---:|---|
+| `-InstallDir PATH` | `%USERPROFILE%\.hermes-docker` | install directory |
+| `-Provider NAME` | `openrouter` | provider name |
+| `-Model MODEL` | `deepseek/deepseek-v4-flash:free` | model name |
+| `-Port PORT` | `8642` | local API server port |
+| `-ProjectName NAME` | `hermes-agent` | Docker Compose project name |
+| `-Browser` | off | include Playwright + Chromium |
+| `-NoStart` | off | build/generate but do not start |
+| `-SkipBuild` | off | generate files only |
+| `-Force` | off | overwrite generated files |
+| `-Uninstall` | off | stop stack and optionally remove volume |
+
+---
+
+## Provider keys
+
+Set one key for the provider you use:
+
+| Provider | Environment variable |
+|---|---|
+| OpenRouter | `OPENROUTER_API_KEY` |
+| Anthropic | `ANTHROPIC_API_KEY` |
+| OpenAI | `OPENAI_API_KEY` |
+| Google/Gemini | `GOOGLE_API_KEY` or `GEMINI_API_KEY` |
+| DeepSeek | `DEEPSEEK_API_KEY` |
+| Custom endpoint | `CUSTOM_API_KEY` + `CUSTOM_BASE_URL` |
+
+Extra installer env vars:
+
+| Variable | Purpose |
+|---|---|
+| `API_SERVER_KEY` | use fixed API bearer key instead of generated key |
+| `HERMES_VERSION` | Hermes Agent git ref/tag/branch to install |
+| `HERMES_NONINTERACTIVE=1` | skip interactive prompts in shell installer |
+
+---
+
+## Browser automation
+
+Browser tooling is intentionally disabled by default, because Playwright + Chromium adds size and install time.
+
+Enable only when you need browser automation:
 
 ```bash
-./install.sh --browser
+bash install.sh --browser
 ```
 
 ```powershell
 .\install.ps1 -Browser
 ```
 
-## Updating provider or model
+---
 
-Edit `.env`, then restart:
+## Pin Hermes Agent version
+
+By default, the Docker build installs Hermes Agent from `main`.
+
+Pin a branch, tag, or commit:
+
+```bash
+HERMES_VERSION=v0.5.0 bash install.sh
+```
+
+Or:
+
+```bash
+HERMES_VERSION=main bash install.sh --force
+```
+
+---
+
+## Update config
+
+Edit generated `.env`:
 
 ```bash
 cd ~/.hermes-docker
@@ -187,15 +227,20 @@ nano .env
 ./bin/hermes-docker restart
 ```
 
-## Pin Hermes version
+Common fields:
 
-```bash
-HERMES_VERSION=v0.5.0 bash install.sh
+```env
+MODEL_PROVIDER=openrouter
+MODEL_NAME=deepseek/deepseek-v4-flash:free
+API_SERVER_PORT=8642
+OPENROUTER_API_KEY=...
 ```
+
+---
 
 ## Uninstall
 
-### Linux / macOS / WSL
+Shell:
 
 ```bash
 bash uninstall.sh
@@ -204,7 +249,7 @@ bash uninstall.sh --remove-files
 bash uninstall.sh --remove-files --remove-data
 ```
 
-### Windows PowerShell
+PowerShell:
 
 ```powershell
 .\uninstall.ps1
@@ -213,45 +258,92 @@ bash uninstall.sh --remove-files --remove-data
 .\uninstall.ps1 -RemoveFiles -RemoveData
 ```
 
-## CI coverage
+Defaults are conservative: containers stop, files and volumes stay unless removal is requested.
 
-The repository CI currently verifies:
+---
 
-- `bash -n` on shell scripts
-- `shellcheck` on shell scripts
-- PowerShell parse validity
-- Generated Docker Compose config from installer output
-- Default browser layer remains opt-in
-- Generated version pin exists in `.env`
-- Main-branch Docker build + health smoke test
-- Docs sanity checks for stale flags and missing files
+## Safety defaults
 
-## Repository quality notes
+- API binds to `127.0.0.1`, not public interfaces.
+- `.env` is generated with `600` permissions on Unix-like systems.
+- Browser dependencies are opt-in.
+- Existing `.env` is preserved unless `--force` / `-Force` is used.
+- Uninstall does not delete data by default.
+- `--skip-build` only generates files and does not require Docker to be running.
 
-This repository is intended to be public-quality:
+---
 
-- multi-stage Docker build
-- explicit uninstall paths
-- helper CLI included in generated install
-- browser dependencies opt-in
-- version pin support
-- healthcheck-based startup verification
-- CI coverage for both script families
+## CI checks
 
-## Files in repo
+Every push validates:
 
-- `install.sh` — shell installer
-- `install.ps1` — Windows PowerShell installer
-- `uninstall.sh` — shell uninstaller
-- `uninstall.ps1` — PowerShell uninstaller
-- `.github/workflows/ci.yml` — repository CI
-- `CHANGELOG.md` — release history
+- Bash syntax
+- ShellCheck
+- PowerShell parser
+- generated Docker Compose config
+- generated helper script syntax
+- uninstall mode safety
+- docs sanity
+- Docker build + API health smoke test on `main`
+
+---
+
+## Troubleshooting
+
+### Docker installed but not reachable
+
+Start Docker and rerun:
+
+```bash
+sudo systemctl start docker
+```
+
+macOS:
+
+```bash
+open -a Docker
+```
+
+Windows: open Docker Desktop and wait until it says it is running.
+
+### Port already in use
+
+Pick another port:
+
+```bash
+bash install.sh --port 18642
+```
+
+### Model calls fail
+
+Check `.env`:
+
+```bash
+cd ~/.hermes-docker
+./bin/hermes-docker logs
+nano .env
+./bin/hermes-docker restart
+```
+
+Verify provider key and model name.
+
+---
+
+## Repository files
+
+| File | Purpose |
+|---|---|
+| `install.sh` | Linux/macOS/WSL/Git Bash installer |
+| `install.ps1` | Windows PowerShell installer |
+| `uninstall.sh` | shell uninstaller |
+| `uninstall.ps1` | PowerShell uninstaller |
+| `.github/workflows/ci.yml` | CI pipeline |
+| `CHANGELOG.md` | release notes |
+| `SECURITY.md` | security model |
+| `CONTRIBUTING.md` | contribution checks |
+
+---
 
 ## License
 
-MIT. See `LICENSE`.
-
-## Security and contributing
-
-- See `SECURITY.md`
-- See `CONTRIBUTING.md`
+MIT. See [`LICENSE`](LICENSE).
