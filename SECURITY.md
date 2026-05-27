@@ -25,7 +25,7 @@ The installer:
 
 - runs Hermes Agent inside Docker
 - stores provider keys in `.env`
-- exposes Hermes API Server on localhost by default
+- exposes Hermes API Server on `127.0.0.1` by default
 - uses a generated `API_SERVER_KEY`
 - mounts a user workspace into `/workspace`
 

@@ -27,6 +27,10 @@ jobs:
           bash -n uninstall.sh
       - name: ShellCheck
         run: shellcheck -x install.sh uninstall.sh
+      - name: Uninstall mode does not bootstrap Docker
+        run: |
+          HERMES_NONINTERACTIVE=1 bash install.sh --uninstall --dir "$RUNNER_TEMP/not-installed"
+          bash uninstall.sh --help >/dev/null
 
   powershell:
     name: PowerShell scripts

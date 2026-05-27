@@ -25,7 +25,7 @@
 set -Eeuo pipefail
 IFS=$' \n\t'
 
-VERSION="1.1.0"
+VERSION="1.1.2"
 DEFAULT_DIR="$HOME/.hermes-docker"
 INSTALL_DIR="$DEFAULT_DIR"
 PROJECT_NAME="hermes-agent"
@@ -434,6 +434,7 @@ DEEPSEEK_API_KEY=$deepseek_key
 CUSTOM_API_KEY=$custom_key
 CUSTOM_BASE_URL=${CUSTOM_BASE_URL:-}
 EOF
+    chmod 600 .env || true
     ok "Created .env"
   else
     warn "Keeping existing .env"
@@ -447,7 +448,7 @@ write_files() {
     cat > Dockerfile <<'EOF'
 # Stage 1: Builder — install Hermes + Python deps
 FROM python:3.12-slim-bookworm AS builder
-ARG INSTALL_BROWSER=1
+ARG INSTALL_BROWSER=0
 ARG HERMES_VERSION=main
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git ca-certificates build-essential python3-dev pkg-config \
@@ -461,7 +462,7 @@ RUN git clone --depth 1 --branch $HERMES_VERSION \
 
 # Stage 2: Runtime
 FROM python:3.12-slim-bookworm
-ARG INSTALL_BROWSER=1
+ARG INSTALL_BROWSER=0
 ENV DEBIAN_FRONTEND=noninteractive \
     HERMES_HOME=/root/.hermes \
     PATH=/venv/bin:/root/.local/bin:$PATH \
@@ -589,11 +590,10 @@ services:
         INSTALL_BROWSER: ${INSTALL_BROWSER:-0}
         HERMES_VERSION: ${HERMES_VERSION:-main}
     image: local/hermes-agent:latest
-    container_name: hermes-agent
     env_file:
       - .env
     ports:
-      - "${API_SERVER_PORT:-8642}:${API_SERVER_PORT:-8642}"
+      - "127.0.0.1:${API_SERVER_PORT:-8642}:${API_SERVER_PORT:-8642}"
     volumes:
       - hermes_home:/root/.hermes
       - ./workspace:/workspace
@@ -748,23 +748,39 @@ build_and_start() {
 }
 
 uninstall() {
-  [[ -d "$INSTALL_DIR" ]] || die "Install directory not found: $INSTALL_DIR"
+  if [[ ! -d "$INSTALL_DIR" ]]; then
+    warn "Install directory not found: $INSTALL_DIR"
+    warn "Nothing to uninstall."
+    return 0
+  fi
   cd "$INSTALL_DIR"
-  local c; c="$(compose_cmd)" || die "Docker Compose not found"
-  $c down
+  local c=""
+  if ! c="$(compose_cmd)"; then
+    warn "Docker Compose not found. Skipping stack shutdown."
+    warn "Files kept at: $INSTALL_DIR"
+    return
+  fi
+  if ! docker info >/dev/null 2>&1; then
+    warn "Docker daemon is not running. Skipping stack shutdown."
+    warn "Files kept at: $INSTALL_DIR"
+    return
+  fi
+  $c down --remove-orphans || true
   if [[ "$NONINTERACTIVE" == "1" ]]; then
-    warn "Kept Docker volume. To remove data: cd $INSTALL_DIR && $c down -v"
+    warn "Kept Docker volume. To remove data: cd $INSTALL_DIR && $c down -v --remove-orphans"
     return
   fi
   printf "Remove Hermes Docker data volume too? This deletes config/sessions/memory. [y/N]: "
   read -r ans || true
-  case "$ans" in y|Y|yes|YES) $c down -v; ok "Removed stack and data volume" ;; *) ok "Removed stack, kept data volume" ;; esac
+  case "$ans" in y|Y|yes|YES) $c down -v --remove-orphans; ok "Removed stack and data volume" ;; *) ok "Removed stack, kept data volume" ;; esac
 }
 
 main() {
-  preflight
   if [[ "$UNINSTALL" == "1" ]]; then uninstall; exit 0; fi
-  resolve_port
+  preflight
+  if [[ "$START_AFTER_INSTALL" == "1" ]]; then
+    resolve_port
+  fi
   make_env
   write_files
   build_and_start

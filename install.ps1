@@ -175,9 +175,47 @@ function Wait-Health() {
   docker compose logs --tail 80 hermes
 }
 
-# ── Preflight ──────────────────────────────────────────────────
+# ── Uninstall ───────────────────────────────────────────────────
 
 Log 'Hermes Docker Installer for Windows'
+
+if ($Uninstall) {
+  if (-not (Test-Path $InstallDir)) {
+    Warn "Install directory not found: $InstallDir"
+    Warn 'Nothing to uninstall.'
+    exit 0
+  }
+
+  $dockerAvailable = $false
+  if (Test-Command 'docker') {
+    docker info *> $null
+    if ($LASTEXITCODE -eq 0) { $dockerAvailable = $true }
+    else { Warn 'Docker daemon is not running. Skipping stack shutdown.' }
+  } else {
+    Warn 'Docker not found. Skipping stack shutdown.'
+  }
+
+  if ($dockerAvailable) {
+    docker compose version *> $null
+    if ($LASTEXITCODE -eq 0) {
+      Push-Location $InstallDir
+      docker compose down --remove-orphans *> $null
+      Log "Stack stopped. Files kept at: $InstallDir"
+      $ans = Read-Host 'Remove data volume too? (y/N)'
+      if ($ans -match '^(y|yes)$') { docker compose down -v --remove-orphans; Ok 'Removed stack and data volume' }
+      else { Ok 'Removed stack, kept data volume' }
+      Pop-Location
+    } else {
+      Warn 'Docker Compose v2 is not available. Skipping stack shutdown.'
+      Warn "Files kept at: $InstallDir"
+    }
+  } else {
+    Warn "Files kept at: $InstallDir"
+  }
+  exit 0
+}
+
+# ── Preflight ──────────────────────────────────────────────────
 
 $CanValidateCompose = $false
 if ($SkipBuild) {
@@ -201,38 +239,6 @@ if ($SkipBuild) {
 } else {
   Ensure-Docker
   $CanValidateCompose = $true
-}
-
-# ── Uninstall ───────────────────────────────────────────────────
-
-if ($Uninstall) {
-  if (-not (Test-Path $InstallDir)) {
-    Warn "Install directory not found: $InstallDir"
-    Warn 'Nothing to uninstall.'
-    exit 0
-  }
-
-  $dockerAvailable = $false
-  if (Test-Command 'docker') {
-    docker info *> $null
-    if ($LASTEXITCODE -eq 0) { $dockerAvailable = $true }
-    else { Warn 'Docker daemon is not running. Skipping stack shutdown.' }
-  } else {
-    Warn 'Docker not found. Skipping stack shutdown.'
-  }
-
-  if ($dockerAvailable) {
-    Push-Location $InstallDir
-    docker compose down --remove-orphans *> $null
-    Log "Stack stopped. Files kept at: $InstallDir"
-    $ans = Read-Host 'Remove data volume too? (y/N)'
-    if ($ans -match '^(y|yes)$') { docker compose down -v --remove-orphans; Ok 'Removed stack and data volume' }
-    else { Ok 'Removed stack, kept data volume' }
-    Pop-Location
-  } else {
-    Warn "Files kept at: $InstallDir"
-  }
-  exit 0
 }
 
 # ── Interactive setup ───────────────────────────────────────────
@@ -261,7 +267,9 @@ if (-not $PSBoundParameters.ContainsKey('Provider')) {
   if ($modelInput) { $Model = $modelInput }
 }
 
-Resolve-Port
+if (-not $NoStart -and -not $SkipBuild) {
+  Resolve-Port
+}
 
 if (-not $ApiServerKey) { $ApiServerKey = New-SecretHex }
 
@@ -322,7 +330,7 @@ $(if ($CustomBaseUrl) { "CUSTOM_BASE_URL=$CustomBaseUrl" })
 Safe-Write 'Dockerfile' @'
 # Stage 1: Builder — install Hermes + Python deps
 FROM python:3.12-slim-bookworm AS builder
-ARG INSTALL_BROWSER=1
+ARG INSTALL_BROWSER=0
 ARG HERMES_VERSION=main
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git ca-certificates build-essential python3-dev pkg-config \
@@ -336,7 +344,7 @@ RUN git clone --depth 1 --branch $HERMES_VERSION \
 
 # Stage 2: Runtime
 FROM python:3.12-slim-bookworm
-ARG INSTALL_BROWSER=1
+ARG INSTALL_BROWSER=0
 ENV DEBIAN_FRONTEND=noninteractive \
     HERMES_HOME=/root/.hermes \
     PATH=/venv/bin:/root/.local/bin:$PATH \
@@ -457,11 +465,10 @@ services:
         INSTALL_BROWSER: ${INSTALL_BROWSER:-0}
         HERMES_VERSION: ${HERMES_VERSION:-main}
     image: local/hermes-agent:latest
-    container_name: hermes-agent
     env_file:
       - .env
     ports:
-      - "${API_SERVER_PORT:-8642}:${API_SERVER_PORT:-8642}"
+      - "127.0.0.1:${API_SERVER_PORT:-8642}:${API_SERVER_PORT:-8642}"
     volumes:
       - hermes_home:/root/.hermes
       - ./workspace:/workspace

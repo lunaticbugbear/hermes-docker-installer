@@ -59,6 +59,7 @@ Important:
 - Browser layer is opt-in, not default
 - Hermes version is pinnable via `HERMES_VERSION`
 - API server default port is `8642`
+- Generated API port binds to `127.0.0.1` by default
 - Provider/model can be passed via flags or selected interactively
 
 ## CLI options
