@@ -35,6 +35,100 @@ function Warn($msg) { Write-Host "WARN: $msg" -ForegroundColor Yellow }
 function Die($msg) { Write-Host "ERROR: $msg" -ForegroundColor Red; exit 1 }
 function Test-Command($cmd) { return [bool](Get-Command $cmd -ErrorAction SilentlyContinue) }
 
+function Get-DockerDesktopPath() {
+  $paths = @(
+    "$env:ProgramFiles\Docker\Docker\Docker Desktop.exe",
+    "$env:ProgramFiles (x86)\Docker\Docker\Docker Desktop.exe",
+    "$env:LocalAppData\Programs\Docker\Docker\Docker Desktop.exe"
+  )
+  foreach ($path in $paths) {
+    if (Test-Path $path) { return $path }
+  }
+  return $null
+}
+
+function Ensure-Docker() {
+  if (Test-Command 'docker') {
+    docker info *> $null
+    if ($LASTEXITCODE -eq 0) { Ok 'Docker is ready'; return }
+
+    Log 'Docker is installed but not running. Attempting to start Docker Desktop...'
+    $desktopExe = Get-DockerDesktopPath
+    if (-not $desktopExe) {
+      Die 'Docker CLI exists but Docker Desktop executable was not found. Start Docker Desktop manually or reinstall it, then rerun the installer.'
+    }
+
+    Start-Process $desktopExe
+    Log 'Waiting for Docker Desktop to start (up to 2 minutes)...'
+    for ($i=0; $i -lt 30; $i++) {
+      docker info *> $null
+      if ($LASTEXITCODE -eq 0) { Ok 'Docker is ready'; return }
+      Start-Sleep -Seconds 4
+    }
+    Die 'Docker Desktop failed to start. Open it manually and rerun the installer.'
+  }
+
+  Log 'Docker is not installed. Attempting to install Docker Desktop...'
+
+  if (Test-Command 'winget') {
+    Log 'Installing Docker Desktop via winget...'
+    try {
+      $wingetProcess = Start-Process winget -ArgumentList @('install', 'Docker.DockerDesktop', '--silent', '--accept-package-agreements', '--accept-source-agreements') -NoNewWindow -Wait -PassThru
+      if ($wingetProcess.ExitCode -eq 0) {
+        Ok 'Docker Desktop installation completed via winget.'
+      } else {
+        Warn "winget exit code: $($wingetProcess.ExitCode). Attempting manual download fallback..."
+      }
+    } catch {
+      Warn 'winget installation failed. Falling back to manual download...'
+    }
+  }
+
+  if (-not (Test-Command 'docker')) {
+    Log 'Downloading Docker Desktop installer...'
+    $url = 'https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe'
+    $installer = Join-Path $env:TEMP 'DockerDesktopInstaller.exe'
+    try {
+      Invoke-WebRequest -Uri $url -OutFile $installer -UseBasicParsing
+      Log 'Running Docker Desktop installer silently...'
+      $installerProcess = Start-Process $installer -ArgumentList @('install', '--quiet', '--accept-license') -NoNewWindow -Wait -PassThru
+      if ($installerProcess.ExitCode -eq 0) {
+        Ok 'Docker Desktop installation completed successfully.'
+      } else {
+        Die "Installer exit code: $($installerProcess.ExitCode). Install Docker Desktop manually: https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"
+      }
+    } catch {
+      Die 'Failed to download/install Docker. Please install manually: https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe'
+    } finally {
+      if (Test-Path $installer) { Remove-Item $installer -Force -ErrorAction SilentlyContinue }
+    }
+  }
+
+  $machinePath = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
+  $userPath = [System.Environment]::GetEnvironmentVariable('Path', 'User')
+  $env:Path = "$machinePath;$userPath"
+
+  if (-not (Test-Command 'docker')) {
+    Die 'Docker installed but not found in PATH. Please restart your PowerShell session and run the installer again.'
+  }
+
+  Log 'Starting Docker Desktop...'
+  $desktopExe = Get-DockerDesktopPath
+  if (-not $desktopExe) {
+    Die 'Docker Desktop was installed but its executable could not be found. Start it manually or reinstall Docker Desktop, then rerun the installer.'
+  }
+  Start-Process $desktopExe
+
+  Log 'Waiting for Docker to be ready (up to 3 minutes)...'
+  for ($i=0; $i -lt 45; $i++) {
+    docker info *> $null
+    if ($LASTEXITCODE -eq 0) { Ok 'Docker is ready'; return }
+    Start-Sleep -Seconds 4
+  }
+
+  Die 'Docker Desktop installed but failed to respond. Please start it manually and rerun the installer.'
+}
+
 function New-SecretHex() {
   $bytes = New-Object byte[] 24
   [System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
@@ -85,15 +179,29 @@ function Wait-Health() {
 
 Log 'Hermes Docker Installer for Windows'
 
-if (-not (Test-Command 'docker')) {
-  Die 'Docker not found. Install Docker Desktop: https://docs.docker.com/desktop/install/windows-install/'
+$CanValidateCompose = $false
+if ($SkipBuild) {
+  Log '--skip-build: skipping Docker checks and build.'
+  if (Test-Command 'docker') {
+    docker info *> $null
+    if ($LASTEXITCODE -eq 0) {
+      docker compose version *> $null
+      if ($LASTEXITCODE -eq 0) {
+        $CanValidateCompose = $true
+        Ok 'Docker is ready, will validate Compose config.'
+      } else {
+        Warn 'Docker is running but Docker Compose v2 is not available; will skip Compose config validation.'
+      }
+    } else {
+      Warn 'Docker is installed but daemon is not available; will skip Compose config validation.'
+    }
+  } else {
+    Warn 'Docker is not available; will skip Compose config validation.'
+  }
+} else {
+  Ensure-Docker
+  $CanValidateCompose = $true
 }
-
-docker info *> $null
-if ($LASTEXITCODE -ne 0) {
-  Die 'Docker Desktop is not running or WSL2 backend is disabled. Start Docker Desktop and retry.'
-}
-Ok 'Docker is ready'
 
 # ── Uninstall ───────────────────────────────────────────────────
 
@@ -395,8 +503,12 @@ Edit config/API keys:
 
 if ($SkipBuild) {
   Log 'Generated files only; skipping Docker build/start.'
-  docker compose config | Out-Null
-  Ok 'Docker Compose config is valid'
+  if ($CanValidateCompose) {
+    docker compose config | Out-Null
+    Ok 'Docker Compose config is valid'
+  } else {
+    Warn 'Skipped Docker Compose validation because Docker is not available.'
+  }
 } else {
   if ($Browser) {
     Log 'Building Docker image with Playwright/Chromium (may take 5-10 minutes)...'

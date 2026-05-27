@@ -128,27 +128,135 @@ compose_cmd() {
   fi
 }
 
-install_hint_docker() {
+ensure_docker() {
   local os="$1"
-  cat <<EOF
-Docker is required but was not found.
+  local started="0"
 
-Install Docker first:
-  Linux Ubuntu/Debian:
-    curl -fsSL https://get.docker.com | sh
-    sudo usermod -aG docker \$USER
-    # log out/in, then rerun installer
-
-  macOS:
-    Install Docker Desktop: https://docs.docker.com/desktop/install/mac-install/
-    or: brew install --cask docker
-
-  Windows:
-    Install Docker Desktop with WSL2 backend:
-    https://docs.docker.com/desktop/install/windows-install/
-
-Detected OS: $os
+  if require_cmd docker; then
+    if docker info >/dev/null 2>&1; then
+      return 0
+    fi
+    # Docker exists but daemon not running — try to start it
+    log "Docker is installed but not running. Attempting to start..."
+    case "$os" in
+      linux)
+        if command -v systemctl >/dev/null 2>&1; then
+          sudo systemctl enable --now docker 2>/dev/null || true
+        elif command -v service >/dev/null 2>&1; then
+          sudo service docker start 2>/dev/null || true
+        fi
+        ;;
+      macos)
+        open -a Docker 2>/dev/null || true
+        log "Opening Docker Desktop. It may take a minute..."
+        ;;
+      windows-shell)
+        warn "Start Docker Desktop manually and retry."
+        return 1
+        ;;
+    esac
+    for i in $(seq 1 30); do
+      if docker info >/dev/null 2>&1; then
+        ok "Docker daemon is now running"
+        return 0
+      fi
+      sleep 2
+    done
+    warn "Could not start Docker daemon automatically."
+    cat <<EOF
+Try manually:
+  Linux:   sudo systemctl start docker
+  macOS:   open -a Docker
+  Windows: Open Docker Desktop from Start Menu
 EOF
+    return 1
+  fi
+
+  log "Docker not found. Installing for $os..."
+  case "$os" in
+    linux)
+      if is_wsl; then
+        log "WSL detected: installing Docker Engine directly"
+      fi
+      # Install curl if missing
+      if ! require_cmd curl; then
+        if command -v apt-get >/dev/null 2>&1; then
+          sudo apt-get update -qq && sudo apt-get install -y -qq curl
+        elif command -v yum >/dev/null 2>&1; then
+          sudo yum install -y curl
+        elif command -v apk >/dev/null 2>&1; then
+          apk add curl
+        fi
+      fi
+      if curl -fsSL https://get.docker.com | sudo sh; then
+        sudo usermod -aG docker "$(whoami 2>/dev/null || echo "$USER")" 2>/dev/null || true
+        if command -v systemctl >/dev/null 2>&1; then
+          sudo systemctl enable --now docker 2>/dev/null || true
+        elif command -v service >/dev/null 2>&1; then
+          sudo service docker start 2>/dev/null || true
+        fi
+        for i in $(seq 1 30); do
+          if docker info >/dev/null 2>&1; then
+            started="1"
+            break
+          fi
+          sleep 2
+        done
+      fi
+      ;;
+    macos)
+      if require_cmd brew; then
+        brew install --cask docker
+      else
+        log "Homebrew not found. Downloading Docker Desktop..."
+        local dmg="/tmp/Docker.dmg"
+        curl -L -o "$dmg" "https://desktop.docker.com/mac/main/amd64/Docker.dmg" || {
+          warn "Download failed. Install Docker Desktop manually."
+          warn "  https://docs.docker.com/desktop/install/mac-install/"
+          return 1
+        }
+        sudo hdiutil attach "$dmg" -quiet 2>/dev/null || true
+        if [ -d "/Volumes/Docker" ]; then
+          cp -R "/Volumes/Docker/Docker.app" "/Applications" 2>/dev/null || true
+          sudo hdiutil detach "/Volumes/Docker" -quiet 2>/dev/null || true
+        fi
+        rm -f "$dmg"
+      fi
+      open -a Docker 2>/dev/null || true
+      log "Docker Desktop installed. Waiting for it to start..."
+      for i in $(seq 1 60); do
+        if docker info >/dev/null 2>&1; then
+          started="1"
+          break
+        fi
+        sleep 5
+      done
+      ;;
+    windows-shell)
+      warn "Windows shell detected. Use install.ps1 for native Windows install."
+      warn "Or install Docker Desktop manually: https://docs.docker.com/desktop/install/windows-install/"
+      return 1
+      ;;
+    *)
+      warn "Unsupported OS: $os. Install Docker manually."
+      return 1
+      ;;
+  esac
+
+  if [[ "$started" == "1" ]]; then
+    ok "Docker installed and running"
+  else
+    warn "Docker installed but may need a restart or may not be running."
+    warn "If Docker daemon is not running, try:"
+    warn "  Linux: sudo systemctl start docker"
+    warn "  macOS: open -a Docker"
+    warn "Then re-run this installer."
+    # Check if we at least have the docker binary now
+    if require_cmd docker; then
+      return 0
+    fi
+    return 1
+  fi
 }
 
 prompt_default() {
@@ -220,20 +328,55 @@ preflight() {
   is_wsl && wsl_suffix=" / WSL"
   log "Detected OS: ${os}${wsl_suffix}"
 
-  require_cmd docker || { install_hint_docker "$os"; exit 1; }
+  if [[ "$SKIP_BUILD" == "1" ]]; then
+    if require_cmd docker && docker info >/dev/null 2>&1 && COMPOSE="$(compose_cmd)"; then
+      ok "Docker is ready"
+    else
+      COMPOSE=""
+      warn "Docker is not available; --skip-build will generate files without validating Compose config."
+    fi
+    return
+  fi
+
+  require_cmd docker || ensure_docker "$os" || exit 1
   COMPOSE="$(compose_cmd)" || die "Docker Compose is required. Install Docker Compose v2 / Docker Desktop."
 
   if ! docker info >/dev/null 2>&1; then
-    cat <<EOF
+    warn "Docker daemon is not responding. Attempting to start..."
+    case "$os" in
+      linux)
+        if command -v systemctl >/dev/null 2>&1; then
+          sudo systemctl enable --now docker 2>/dev/null || true
+        elif command -v service >/dev/null 2>&1; then
+          sudo service docker start 2>/dev/null || true
+        fi
+        ;;
+      macos)
+        open -a Docker 2>/dev/null || true
+        ;;
+      windows-shell)
+        warn "Open Docker Desktop from Start Menu and enable WSL2 backend."
+        ;;
+    esac
+    for i in $(seq 1 30); do
+      if docker info >/dev/null 2>&1; then
+        ok "Docker daemon is now running"
+        break
+      fi
+      sleep 2
+    done
+    if ! docker info >/dev/null 2>&1; then
+      cat <<EOF
 Docker is installed but not reachable.
 
 Common fixes:
   Linux:   sudo systemctl start docker
   Linux:   sudo usermod -aG docker \$USER   # then log out/in
-  macOS:   open Docker Desktop and wait until it is running
-  Windows: open Docker Desktop and enable WSL2 backend
+  macOS:   Open Docker Desktop and wait until it is running
+  Windows: Open Docker Desktop from Start Menu and enable WSL2 backend
 EOF
-    exit 1
+      exit 1
+    fi
   fi
   ok "Docker is ready"
 }
@@ -585,8 +728,12 @@ build_and_start() {
   cd "$INSTALL_DIR"
   if [[ "$SKIP_BUILD" == "1" ]]; then
     log "Generated files only; skipping Docker build/start."
-    $COMPOSE config >/dev/null
-    ok "Docker Compose config is valid"
+    if [[ -n "${COMPOSE:-}" ]]; then
+      $COMPOSE config >/dev/null
+      ok "Docker Compose config is valid"
+    else
+      warn "Skipped Docker Compose validation because Docker is not available."
+    fi
     return
   fi
   log "Building Docker image. Add --browser for Playwright/Chromium (~450 MB extra, default: skip)."
