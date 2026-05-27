@@ -1,0 +1,52 @@
+# ── Secrets & credentials ─────────────────────────────────
+.env
+*.key
+*.pem
+**/secrets/
+
+# ── Generated runtime files ─────────────────────────────
+workspace/
+Dockerfile
+bootstrap.sh
+healthcheck.sh
+docker-compose.yml
+bin/hermes-docker
+hermes-docker.ps1
+
+# ── Docker ──────────────────────────────────────────────
+.docker/
+docker-compose.override.yml
+
+# ── OS garbage ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+*.orig
+*.bak
+
+# ── Editor / IDE ────────────────────────────────────────
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.vs/
+.vscode-server/
+
+# ── Node / Python ───────────────────────────────────────
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# ── Hermes data (if someone runs inside repo dir) ──────
+.hermes/
+
+# ── Git / archive ───────────────────────────────────────
+*.tar.gz
+*.zip
+.DS_Store

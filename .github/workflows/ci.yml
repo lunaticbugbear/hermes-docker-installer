@@ -1,0 +1,78 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shell:
+    name: Shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Bash syntax
+        run: |
+          bash -n install.sh
+          bash -n uninstall.sh
+      - name: ShellCheck
+        run: |
+          shellcheck -x install.sh uninstall.sh
+
+  powershell:
+    name: PowerShell scripts
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse PowerShell scripts
+        shell: pwsh
+        run: |
+          $errors = $null
+          [System.Management.Automation.PSParser]::Tokenize((Get-Content -Raw .\install.ps1), [ref]$errors) | Out-Null
+          if ($errors) { $errors | Format-List; exit 1 }
+          $errors = $null
+          [System.Management.Automation.PSParser]::Tokenize((Get-Content -Raw .\uninstall.ps1), [ref]$errors) | Out-Null
+          if ($errors) { $errors | Format-List; exit 1 }
+
+  generated-compose:
+    name: Generated Docker Compose config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate files without build
+        run: |
+          HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-test-key-123456789 bash install.sh --skip-build --no-browser --force --dir "$RUNNER_TEMP/hermes-docker-ci"
+      - name: Validate compose config
+        working-directory: ${{ runner.temp }}/hermes-docker-ci
+        run: docker compose config
+      - name: Check generated helper syntax
+        working-directory: ${{ runner.temp }}/hermes-docker-ci
+        run: |
+          bash -n bootstrap.sh
+          bash -n healthcheck.sh
+          bash -n bin/hermes-docker
+
+  docs:
+    name: Docs sanity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Required files exist
+        run: |
+          test -f README.md
+          test -f LICENSE
+          test -f install.sh
+          test -f install.ps1
+          test -f uninstall.sh
+          test -f uninstall.ps1
+      - name: Placeholder URL notice
+        run: |
+          if grep -R "lunaticbugbear/hermes-docker-installer" README.md; then
+            echo "::warning::README points to lunaticbugbear. If you forked the repo, replace with your URL."
+          fi
