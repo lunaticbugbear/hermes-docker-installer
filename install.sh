@@ -105,6 +105,28 @@ if [[ "$NONINTERACTIVE" != "1" ]]; then
       6) PROVIDER="custom"; MODEL="${MODEL:-model-name}" ;;
       *) die "Invalid provider choice: $provider_choice" ;;
     esac
+
+    # Prompt API key immediately after choosing provider
+    key_var=""
+    case "$PROVIDER" in
+      openrouter) key_var="OPENROUTER_API_KEY" ;;
+      anthropic) key_var="ANTHROPIC_API_KEY" ;;
+      openai) key_var="OPENAI_API_KEY" ;;
+      google) key_var="GOOGLE_API_KEY" ;;
+      deepseek) key_var="DEEPSEEK_API_KEY" ;;
+      custom) key_var="CUSTOM_API_KEY" ;;
+    esac
+
+    # shellcheck disable=SC2015
+    env_val="${!key_var:-}"
+    if [[ -z "$env_val" ]]; then
+      printf "API key for provider '%s' (press Enter to skip): " "$PROVIDER"
+      read -r -s api_key_input || true
+      printf "\n"
+      # shellcheck disable=SC2034
+      declare "$key_var=$api_key_input"
+    fi
+
     printf "Model [%s]: " "$MODEL"
     read -r model_choice || true
     MODEL="${model_choice:-$MODEL}"
@@ -429,9 +451,6 @@ make_env() {
     if [[ -f .env ]]; then
       log "Backing up existing .env to .env.bak"
       cp .env .env.bak
-    fi
-    if [[ -z "$api_key" && "$NONINTERACTIVE" != "1" ]]; then
-      prompt_default api_key "API key for provider '$PROVIDER'" "" 1
     fi
     if [[ -z "$api_key" ]]; then
       warn "No API key provided. Hermes will install, but model calls will fail until you edit $INSTALL_DIR/.env."

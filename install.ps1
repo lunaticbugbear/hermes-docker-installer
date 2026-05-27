@@ -271,8 +271,52 @@ if (-not $PSBoundParameters.ContainsKey('Provider')) {
     '6' { $Provider='custom' }
     default { Die "Invalid provider choice: $choice" }
   }
+
+  # Prompt API key immediately after choosing provider
+  $selectedKey = switch ($Provider) {
+    'openrouter' { $OpenRouterApiKey }
+    'anthropic' { $AnthropicApiKey }
+    'openai' { $OpenAIApiKey }
+    'google' { $GoogleApiKey }
+    'deepseek' { $DeepSeekApiKey }
+    'custom' { $CustomApiKey }
+  }
+  if (-not $selectedKey) {
+    $selectedKey = Read-Host "API key for provider '$Provider' (press Enter to skip)"
+  }
+  # Save to the respective API key variable
+  switch ($Provider) {
+    'openrouter' { $OpenRouterApiKey = $selectedKey }
+    'anthropic' { $AnthropicApiKey = $selectedKey }
+    'openai' { $OpenAIApiKey = $selectedKey }
+    'google' { $GoogleApiKey = $selectedKey }
+    'deepseek' { $DeepSeekApiKey = $selectedKey }
+    'custom' { $CustomApiKey = $selectedKey }
+  }
+
   $modelInput = Read-Host "Model [$Model]"
   if ($modelInput) { $Model = $modelInput }
+} else {
+  # If Provider was specified as a CLI arg, check if key is provided or prompt
+  $selectedKey = switch ($Provider) {
+    'openrouter' { $OpenRouterApiKey }
+    'anthropic' { $AnthropicApiKey }
+    'openai' { $OpenAIApiKey }
+    'google' { $GoogleApiKey }
+    'deepseek' { $DeepSeekApiKey }
+    'custom' { $CustomApiKey }
+  }
+  if (-not $selectedKey) {
+    $selectedKey = Read-Host "API key for provider '$Provider' (press Enter to skip)"
+  }
+  switch ($Provider) {
+    'openrouter' { $OpenRouterApiKey = $selectedKey }
+    'anthropic' { $AnthropicApiKey = $selectedKey }
+    'openai' { $OpenAIApiKey = $selectedKey }
+    'google' { $GoogleApiKey = $selectedKey }
+    'deepseek' { $DeepSeekApiKey = $selectedKey }
+    'custom' { $CustomApiKey = $selectedKey }
+  }
 }
 
 if (-not $NoStart -and -not $SkipBuild) {
@@ -281,17 +325,6 @@ if (-not $NoStart -and -not $SkipBuild) {
 
 if (-not $ApiServerKey) { $ApiServerKey = New-SecretHex }
 
-$selectedKey = switch ($Provider) {
-  'openrouter' { $OpenRouterApiKey }
-  'anthropic' { $AnthropicApiKey }
-  'openai' { $OpenAIApiKey }
-  'google' { $GoogleApiKey }
-  'deepseek' { $DeepSeekApiKey }
-  'custom' { $CustomApiKey }
-}
-if (-not $selectedKey) {
-  $selectedKey = Read-Host "API key for provider '$Provider' (press Enter to skip)"
-}
 if (-not $selectedKey) {
   Warn "No API key provided. Hermes will install, but model calls will fail until you edit $InstallDir\.env."
 } elseif ($selectedKey.Length -lt 12) {
@@ -300,12 +333,12 @@ if (-not $selectedKey) {
 
 $orKey=''; $anthKey=''; $oaKey=''; $gKey=''; $gemKey=''; $dsKey=''; $cKey=''
 switch ($Provider) {
-  'openrouter' { $orKey=$selectedKey }
-  'anthropic' { $anthKey=$selectedKey }
-  'openai' { $oaKey=$selectedKey }
-  'google' { $gKey=$selectedKey; $gemKey=$selectedKey }
-  'deepseek' { $dsKey=$selectedKey }
-  'custom' { $cKey=$selectedKey }
+  'openrouter' { $orKey=$OpenRouterApiKey }
+  'anthropic' { $anthKey=$AnthropicApiKey }
+  'openai' { $oaKey=$OpenAIApiKey }
+  'google' { $gKey=$GoogleApiKey; $gemKey=$GoogleApiKey }
+  'deepseek' { $dsKey=$DeepSeekApiKey }
+  'custom' { $cKey=$CustomApiKey }
 }
 
 $installBrowser = if ($Browser) { '1' } else { '0' }
