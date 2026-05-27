@@ -9,8 +9,8 @@ Before submitting a change:
 ```bash
 bash -n install.sh uninstall.sh
 shellcheck -x install.sh uninstall.sh
-HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-test-key-123456789 bash install.sh --skip-build --force --port 18642 --dir /tmp/hermes-docker-ci
-cd /tmp/hermes-docker-ci && docker compose config
+HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-...6789 bash install.sh --skip-build --force --port 18642 --dir /tmp/omnipod-ci
+cd /tmp/omnipod-ci && docker compose config
 ```
 
 On Windows:

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Hermes Agent Docker Public Installer
+# Omnipod Installer
 # Cross-platform installer for Linux, macOS, and Windows via WSL/Git Bash.
 # Windows native users should use install.ps1 or run this in WSL.
 #
@@ -10,11 +10,11 @@
 #   HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=... bash install.sh
 #
 # Options:
-#   --dir PATH              Install directory, default: ~/.hermes-docker
+#   --dir PATH              Install directory, default: ~/.omnipod
 #   --provider PROVIDER     openrouter|anthropic|openai|google|deepseek|custom, default: openrouter
 #   --model MODEL           Model name, default: deepseek/deepseek-v4-flash:free
 #   --port PORT             Host/API port, default: 8642
-#   --name NAME             Docker Compose project/container prefix, default: hermes-agent
+#   --name NAME             Docker Compose project/container prefix, default: omnipod
 #   --no-start              Build but do not start
 #   --browser               Include Playwright + Chromium (~450 MB, +5 min build)
 #   --skip-build            Generate files only; do not build/start, useful for CI
@@ -26,9 +26,9 @@ set -Eeuo pipefail
 IFS=$' \n\t'
 
 VERSION="1.1.2"
-DEFAULT_DIR="$HOME/.hermes-docker"
+DEFAULT_DIR="$HOME/.omnipod"
 INSTALL_DIR="$DEFAULT_DIR"
-PROJECT_NAME="hermes-agent"
+PROJECT_NAME="omnipod"
 PROVIDER="openrouter"
 MODEL="deepseek/deepseek-v4-flash:free"
 API_PORT="8642"
@@ -473,7 +473,7 @@ RUN git clone --depth 1 --branch $HERMES_VERSION \
 FROM python:3.12-slim-bookworm
 ARG INSTALL_BROWSER=0
 ENV DEBIAN_FRONTEND=noninteractive \
-    HERMES_HOME=/root/.hermes \
+    OMNIPOD_HOME=/root/.hermes \
     PATH=/venv/bin:/root/.local/bin:$PATH \
     PYTHONUNBUFFERED=1
 
@@ -505,9 +505,9 @@ EOF
     cat > bootstrap.sh <<'EOF'
 #!/usr/bin/env bash
 set -Eeuo pipefail
-export HERMES_HOME="${HERMES_HOME:-/root/.hermes}"
+export OMNIPOD_HOME="${OMNIPOD_HOME:-/root/.hermes}"
 export PATH="/venv/bin:/root/.local/bin:$PATH"
-mkdir -p "$HERMES_HOME" /workspace "$HERMES_HOME/logs"
+mkdir -p "$OMNIPOD_HOME" /workspace "$OMNIPOD_HOME/logs"
 
 MODEL_PROVIDER="${MODEL_PROVIDER:-openrouter}"
 MODEL_NAME="${MODEL_NAME:-deepseek/deepseek-v4-flash:free}"
@@ -515,8 +515,8 @@ API_SERVER_KEY="${API_SERVER_KEY:-change-me}"
 API_SERVER_PORT="${API_SERVER_PORT:-8642}"
 CUSTOM_BASE_URL="${CUSTOM_BASE_URL:-}"
 
-if [[ ! -f "$HERMES_HOME/.env" ]]; then
-  cat > "$HERMES_HOME/.env" <<EOENV
+if [[ ! -f "$OMNIPOD_HOME/.env" ]]; then
+  cat > "$OMNIPOD_HOME/.env" <<EOENV
 API_SERVER_KEY=$API_SERVER_KEY
 GATEWAY_ALLOW_ALL_USERS=true
 PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright
@@ -524,22 +524,22 @@ EOENV
 
   # Write only the relevant provider key(s)
   case "$MODEL_PROVIDER" in
-    openrouter) echo "OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}" >> "$HERMES_HOME/.env" ;;
-    anthropic)  echo "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}" >> "$HERMES_HOME/.env" ;;
-    openai)     echo "OPENAI_API_KEY=${OPENAI_API_KEY:-}" >> "$HERMES_HOME/.env" ;;
+    openrouter) echo "OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}" >> "$OMNIPOD_HOME/.env" ;;
+    anthropic)  echo "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}" >> "$OMNIPOD_HOME/.env" ;;
+    openai)     echo "OPENAI_API_KEY=${OPENAI_API_KEY:-}" >> "$OMNIPOD_HOME/.env" ;;
     google)
-      echo "GOOGLE_API_KEY=${GOOGLE_API_KEY:-}" >> "$HERMES_HOME/.env"
-      echo "GEMINI_API_KEY=${GEMINI_API_KEY:-}" >> "$HERMES_HOME/.env" ;;
-    deepseek)   echo "DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}" >> "$HERMES_HOME/.env" ;;
+      echo "GOOGLE_API_KEY=${GOOGLE_API_KEY:-}" >> "$OMNIPOD_HOME/.env"
+      echo "GEMINI_API_KEY=${GEMINI_API_KEY:-}" >> "$OMNIPOD_HOME/.env" ;;
+    deepseek)   echo "DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}" >> "$OMNIPOD_HOME/.env" ;;
     custom)
-      echo "CUSTOM_API_KEY=${CUSTOM_API_KEY:-}" >> "$HERMES_HOME/.env"
-      echo "CUSTOM_BASE_URL=${CUSTOM_BASE_URL:-}" >> "$HERMES_HOME/.env" ;;
+      echo "CUSTOM_API_KEY=${CUSTOM_API_KEY:-}" >> "$OMNIPOD_HOME/.env"
+      echo "CUSTOM_BASE_URL=${CUSTOM_BASE_URL:-}" >> "$OMNIPOD_HOME/.env" ;;
   esac
-  chmod 600 "$HERMES_HOME/.env" || true
+  chmod 600 "$OMNIPOD_HOME/.env" || true
 fi
 
-if [[ ! -f "$HERMES_HOME/config.yaml" ]]; then
-  cat > "$HERMES_HOME/config.yaml" <<EOCFG
+if [[ ! -f "$OMNIPOD_HOME/config.yaml" ]]; then
+  cat > "$OMNIPOD_HOME/config.yaml" <<EOCFG
 model:
   provider: "$MODEL_PROVIDER"
   default: "$MODEL_NAME"
@@ -620,8 +620,8 @@ volumes:
 EOF
   fi
 
-  if safe_write bin/hermes-docker; then
-    cat > bin/hermes-docker <<'EOF'
+  if safe_write bin/omnipod; then
+    cat > bin/omnipod <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -644,8 +644,8 @@ case "$cmd" in
   key) . ./.env; echo "${API_SERVER_KEY:-}" ;;
   *)
     cat <<HELP
-Hermes Docker helper
-Usage: hermes-docker <command>
+Omnipod helper
+Usage: omnipod <command>
 Commands:
   start    Start Hermes gateway/API server
   stop     Stop container
@@ -664,24 +664,24 @@ HELP
     ;;
 esac
 EOF
-    chmod +x bin/hermes-docker
+    chmod +x bin/omnipod
   fi
 
   if safe_write README.md; then
     cat > README.md <<EOF
-# Hermes Agent Docker
+# Omnipod
 
-Installed by Hermes Docker Public Installer v$VERSION.
+Installed by Omnipod Public Installer v$VERSION.
 
 ## Commands
 
-    ./bin/hermes-docker start
-    ./bin/hermes-docker cli
-    ./bin/hermes-docker logs
-    ./bin/hermes-docker status
-    ./bin/hermes-docker restart
-    ./bin/hermes-docker update
-    ./bin/hermes-docker down
+    ./bin/omnipod start
+    ./bin/omnipod cli
+    ./bin/omnipod logs
+    ./bin/omnipod status
+    ./bin/omnipod restart
+    ./bin/omnipod update
+    ./bin/omnipod down
 
 ## API Server
 
@@ -691,7 +691,7 @@ URL:
 
 API key:
 
-    ./bin/hermes-docker key
+    ./bin/omnipod key
 
 ## Config
 
@@ -701,7 +701,7 @@ Edit provider/model/API keys:
 
 Then restart:
 
-    ./bin/hermes-docker restart
+    ./bin/omnipod restart
 
 ## Workspace
 
@@ -717,7 +717,7 @@ Container folder:
 
 This deletes Hermes container data:
 
-    ./bin/hermes-docker reset
+    ./bin/omnipod reset
 EOF
   fi
 }
@@ -805,19 +805,19 @@ Install directory:
   $INSTALL_DIR
 
 Main helper:
-  $INSTALL_DIR/bin/hermes-docker
+  $INSTALL_DIR/bin/omnipod
 
 Open Hermes CLI:
-  cd $INSTALL_DIR && ./bin/hermes-docker cli
+  cd $INSTALL_DIR && ./bin/omnipod cli
 
 View logs:
-  cd $INSTALL_DIR && ./bin/hermes-docker logs
+  cd $INSTALL_DIR && ./bin/omnipod logs
 
 API server:
   http://localhost:$API_PORT
 
 API key:
-  cd $INSTALL_DIR && ./bin/hermes-docker key
+  cd $INSTALL_DIR && ./bin/omnipod key
 
 Edit API keys/model:
   $INSTALL_DIR/.env

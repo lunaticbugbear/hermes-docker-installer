@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
-# Hermes Docker Uninstaller — robust version
+# Omnipod — robust version
 set -Eeuo pipefail
 
-INSTALL_DIR="${HERMES_DOCKER_HOME:-$HOME/.hermes-docker}"
+INSTALL_DIR="${OMNIPOD_HOME:-$HOME/.omnipod}"
 REMOVE_FILES="${REMOVE_FILES:-0}"
 REMOVE_DATA="${REMOVE_DATA:-0}"
 
 usage() {
   cat <<'EOF'
-Hermes Docker uninstaller
+Omnipod uninstaller
 
 Usage:
   uninstall.sh [--dir PATH] [--remove-data] [--remove-files]
 
 Options:
-  --dir PATH       Install directory, default: ~/.hermes-docker
+  --dir PATH       Install directory, default: ~/.omnipod
   --remove-data   Remove Docker volumes too
   --remove-files  Remove generated install directory too
   -h, --help      Show help
@@ -51,26 +51,26 @@ else
   DC=()
 fi
 
-  # Stop containers (if compose available)
-  if [[ ${#DC[@]} -gt 0 ]]; then
-    if docker info >/dev/null 2>&1; then
-      echo "Stopping Hermes Docker stack..."
-      if [[ "$REMOVE_DATA" == "1" ]]; then
-        "${DC[@]}" down -v --remove-orphans 2>&1 || true
-      else
-        "${DC[@]}" down --remove-orphans 2>&1 || true
-      fi
+# Stop containers (if compose available)
+if [[ ${#DC[@]} -gt 0 ]]; then
+  if docker info >/dev/null 2>&1; then
+    echo "Stopping Omnipod Docker stack..."
+    if [[ "$REMOVE_DATA" == "1" ]]; then
+      "${DC[@]}" down -v --remove-orphans 2>&1 || true
     else
-      echo "WARN: Docker daemon is not running. Skipping container shutdown."
+      "${DC[@]}" down --remove-orphans 2>&1 || true
     fi
+  else
+    echo "WARN: Docker daemon is not running. Skipping container shutdown."
   fi
+fi
 
 # Remove files
 if [[ "$REMOVE_FILES" == "1" ]]; then
   rm -rf "$INSTALL_DIR"
   echo "Removed install directory: $INSTALL_DIR"
 else
-  echo "Stopped Hermes Docker stack. Files kept at: $INSTALL_DIR"
+  echo "Stopped Omnipod Docker stack. Files kept at: $INSTALL_DIR"
   echo ""
   echo "To remove data volume too:"
   echo "  $0 --remove-data"

@@ -1,16 +1,16 @@
-# Hermes Agent Docker Public Installer for Windows PowerShell
+# Omnipod Installer for Windows PowerShell
 # Requires Docker Desktop with WSL2 backend enabled.
 # Usage:
 #   .\install.ps1
 #   .\install.ps1 -Provider openrouter -Model deepseek/deepseek-v4-flash:free -OpenRouterApiKey sk-...
 
 param(
-  [string]$InstallDir = "$env:USERPROFILE\.hermes-docker",
+  [string]$InstallDir = "$env:USERPROFILE\.omnipod",
   [ValidateSet('openrouter','anthropic','openai','google','deepseek','custom')]
   [string]$Provider = 'openrouter',
   [string]$Model = 'deepseek/deepseek-v4-flash:free',
   [int]$Port = 8642,
-  [string]$ProjectName = 'hermes-agent',
+  [string]$ProjectName = 'omnipod',
   [switch]$NoStart,
   [switch]$Browser,
   [switch]$SkipBuild,
@@ -177,7 +177,7 @@ function Wait-Health() {
 
 # ── Uninstall ───────────────────────────────────────────────────
 
-Log 'Hermes Docker Installer for Windows'
+Log 'Omnipod Installer for Windows'
 
 if ($Uninstall) {
   if (-not (Test-Path $InstallDir)) {
@@ -353,7 +353,7 @@ RUN git clone --depth 1 --branch $HERMES_VERSION \
 FROM python:3.12-slim-bookworm
 ARG INSTALL_BROWSER=0
 ENV DEBIAN_FRONTEND=noninteractive \
-    HERMES_HOME=/root/.hermes \
+    OMNIPOD_HOME=/root/.hermes \
     PATH=/venv/bin:/root/.local/bin:$PATH \
     PYTHONUNBUFFERED=1
 
@@ -383,9 +383,9 @@ CMD ["hermes", "gateway", "run"]
 Safe-Write 'bootstrap.sh' @'
 #!/usr/bin/env bash
 set -Eeuo pipefail
-export HERMES_HOME="${HERMES_HOME:-/root/.hermes}"
+export OMNIPOD_HOME="${OMNIPOD_HOME:-/root/.hermes}"
 export PATH="/venv/bin:/root/.local/bin:$PATH"
-mkdir -p "$HERMES_HOME" /workspace "$HERMES_HOME/logs"
+mkdir -p "$OMNIPOD_HOME" /workspace "$OMNIPOD_HOME/logs"
 
 MODEL_PROVIDER="${MODEL_PROVIDER:-openrouter}"
 MODEL_NAME="${MODEL_NAME:-deepseek/deepseek-v4-flash:free}"
@@ -393,8 +393,8 @@ API_SERVER_KEY="${API_SERVER_KEY:-change-me}"
 API_SERVER_PORT="${API_SERVER_PORT:-8642}"
 CUSTOM_BASE_URL="${CUSTOM_BASE_URL:-}"
 
-if [[ ! -f "$HERMES_HOME/.env" ]]; then
-  cat > "$HERMES_HOME/.env" <<EOENV
+if [[ ! -f "$OMNIPOD_HOME/.env" ]]; then
+  cat > "$OMNIPOD_HOME/.env" <<EOENV
 API_SERVER_KEY=$API_SERVER_KEY
 GATEWAY_ALLOW_ALL_USERS=true
 PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright
@@ -402,23 +402,23 @@ EOENV
 
   # Write only the relevant provider key
   case "$MODEL_PROVIDER" in
-    openrouter) echo "OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}" >> "$HERMES_HOME/.env" ;;
-    anthropic)  echo "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}" >> "$HERMES_HOME/.env" ;;
-    openai)     echo "OPENAI_API_KEY=${OPENAI_API_KEY:-}" >> "$HERMES_HOME/.env" ;;
+    openrouter) echo "OPENROUTER_API_KEY=${OPEN...-}" >> "$OMNIPOD_HOME/.env" ;;
+    anthropic)  echo "ANTHROPIC_API_KEY=${ANTH...-}" >> "$OMNIPOD_HOME/.env" ;;
+    openai)     echo "OPENAI_API_KEY=${OPEN...-}" >> "$OMNIPOD_HOME/.env" ;;
     google)
-      echo "GOOGLE_API_KEY=${GOOGLE_API_KEY:-}" >> "$HERMES_HOME/.env"
-      echo "GEMINI_API_KEY=${GEMINI_API_KEY:-}" >> "$HERMES_HOME/.env" ;;
-    deepseek)   echo "DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}" >> "$HERMES_HOME/.env" ;;
+      echo "GOOGLE_API_KEY=${GOOG...-}" >> "$OMNIPOD_HOME/.env"
+      echo "GEMINI_API_KEY=${GEMI...-}" >> "$OMNIPOD_HOME/.env" ;;
+    deepseek)   echo "DEEPSEEK_API_KEY=${DEEP...-}" >> "$OMNIPOD_HOME/.env" ;;
     custom)
-      echo "CUSTOM_API_KEY=${CUSTOM_API_KEY:-}" >> "$HERMES_HOME/.env"
-      echo "CUSTOM_BASE_URL=${CUSTOM_BASE_URL:-}" >> "$HERMES_HOME/.env" ;;
+      echo "CUSTOM_API_KEY=${CUST...-}" >> "$OMNIPOD_HOME/.env"
+      echo "CUSTOM_BASE_URL=${CUSTOM_BASE_URL:-}" >> "$OMNIPOD_HOME/.env" ;;
   esac
 
-  chmod 600 "$HERMES_HOME/.env" || true
+  chmod 600 "$OMNIPOD_HOME/.env" || true
 fi
 
-if [[ ! -f "$HERMES_HOME/config.yaml" ]]; then
-  cat > "$HERMES_HOME/config.yaml" <<EOCFG
+if [[ ! -f "$OMNIPOD_HOME/config.yaml" ]]; then
+  cat > "$OMNIPOD_HOME/config.yaml" <<EOCFG
 model:
   provider: "$MODEL_PROVIDER"
   default: "$MODEL_NAME"
@@ -492,7 +492,7 @@ volumes:
   hermes_home:
 '@
 
-Safe-Write 'hermes-docker.ps1' @'
+Safe-Write 'omnipod.ps1' @'
 param([string]$Command='help')
 $ErrorActionPreference='Stop'
 Set-Location $PSScriptRoot
@@ -515,15 +515,15 @@ switch ($Command) {
 '@
 
 Safe-Write 'README.md' @"
-# Hermes Agent Docker
+# Omnipod
 
 Commands:
 
-    .\hermes-docker.ps1 start
-    .\hermes-docker.ps1 cli
-    .\hermes-docker.ps1 logs
-    .\hermes-docker.ps1 status
-    .\hermes-docker.ps1 update
+    .\omnipod.ps1 start
+    .\omnipod.ps1 cli
+    .\omnipod.ps1 logs
+    .\omnipod.ps1 status
+    .\omnipod.ps1 update
 
 API server:
 
@@ -558,8 +558,8 @@ if ($SkipBuild) {
   }
 }
 
-Ok 'Hermes Agent Docker is installed.'
+Ok 'Omnipod is installed.'
 Write-Host "Install directory: $InstallDir"
-Write-Host "Open CLI: cd '$InstallDir'; .\hermes-docker.ps1 cli"
-Write-Host "Logs: cd '$InstallDir'; .\hermes-docker.ps1 logs"
+Write-Host "Open CLI: cd '$InstallDir'; .\omnipod.ps1 cli"
+Write-Host "Logs: cd '$InstallDir'; .\omnipod.ps1 logs"
 Write-Host "API server: http://localhost:$Port"

@@ -1,11 +1,13 @@
-# Hermes Agent Docker Installer
+# Omnipod
 
 <p align="center">
   <pre>
-   __                            __
-  / /  ___  ____ _  ___  ___ ___/ /__  ____  ___ ___
- / _ \/ _ \/ __/  \/ -_)(_-</  _  / _ \/ __/  \/ -_)__
-/_//_/\___/_/ /_/\_/\__//___/\_,_/\___/\__/_/\_/\__/(_)
+   ____                _                 _ 
+  / __ \____ ___  ____(_)___  ____  ____/ |
+ / / / / __ `__ \/ __  / __ \/ __ \/ __  / 
+/ /_/ / / / / / / / / / /_/ / /_/ / /_/ /  
+\____/_/ /_/ /_/_/ /_/ .___/\____/\__,_/   
+                    /_/                    
   </pre>
   <strong>Run Hermes Agent in Docker with one command.</strong><br>
   Isolated host. Persistent state. Local API server. Support Linux, macOS, WSL, and Windows.

@@ -10,8 +10,8 @@ Dockerfile
 bootstrap.sh
 healthcheck.sh
 docker-compose.yml
-bin/hermes-docker
-hermes-docker.ps1
+bin/omnipod
+omnipod.ps1
 
 # ── Docker ──────────────────────────────────────────────
 .docker/

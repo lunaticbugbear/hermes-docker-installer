@@ -1,11 +1,11 @@
-# Hermes Agent Docker Uninstaller for Windows PowerShell
+# Omnipod Uninstaller for Windows PowerShell
 # Usage:
 #   .\uninstall.ps1
 #   .\uninstall.ps1 -RemoveData
 #   .\uninstall.ps1 -RemoveFiles -RemoveData
 
 param(
-  [string]$InstallDir = "$env:USERPROFILE\.hermes-docker",
+  [string]$InstallDir = "$env:USERPROFILE\.omnipod",
   [switch]$RemoveFiles,
   [switch]$RemoveData
 )
@@ -18,7 +18,7 @@ function Warn($msg) { Write-Host "WARN: $msg" -ForegroundColor Yellow }
 function Die($msg) { Write-Host "ERROR: $msg" -ForegroundColor Red; exit 1 }
 function Test-Command($cmd) { return [bool](Get-Command $cmd -ErrorAction SilentlyContinue) }
 
-Log "Hermes Docker Uninstaller for Windows"
+Log "Omnipod Uninstaller for Windows"
 
 # Check if install directory exists
 if (-not (Test-Path $InstallDir)) {
@@ -44,7 +44,7 @@ if (-not (Test-Command 'docker')) {
 # Stop and remove the Docker stack
 if ($dockerAvailable) {
   Push-Location $InstallDir
-  Log "Stopping Hermes Docker stack..."
+  Log "Stopping Omnipod Docker stack..."
   if ($RemoveData) {
     docker compose down -v --remove-orphans
     Ok "Stopped stack and removed data volumes."
