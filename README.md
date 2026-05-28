@@ -22,6 +22,10 @@
   <img alt="Platforms" src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20WSL-blueviolet">
 </p>
 
+<p align="center">
+  <img src="assets/demo.svg" alt="HADES Terminal Demo" width="700">
+</p>
+
 ---
 
 Hermes Agent is powerful. Getting it running locally is not — Python version conflicts, Chromium dependency chains, shell PATH juggling, provider credential plumbing.
