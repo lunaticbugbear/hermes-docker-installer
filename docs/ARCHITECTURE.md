@@ -1,8 +1,8 @@
-# Omnipod Architecture
+# Hades Architecture
 
 ## What it is
 
-Omnipod is a packaging and orchestration layer on top of upstream Hermes Agent. It's not a fork.
+Hades is a packaging and orchestration layer on top of upstream Hermes Agent. It's not a fork.
 
 It handles:
 
@@ -14,14 +14,14 @@ It handles:
 
 ## Runtime layout
 
-### Host side (install directory, default `~/.omnipod/`)
+### Host side (install directory, default `~/.hades/`)
 
 - `.env` — provider keys, model, API port, build flags
 - `Dockerfile` — multi-stage build (builder + slim runtime)
 - `docker-compose.yml` — volume, port, and workspace wiring
 - `bootstrap.sh` — idempotent first-run setup inside the container
 - `healthcheck.sh` — API health probe
-- `bin/omnipod`, `bin/omnipod.ps1`, `bin/omnipod.cmd` — operator control scripts
+- `bin/hades`, `bin/hades.ps1`, `bin/hades.cmd` — operator control scripts
 - `workspace/` — bind-mounted to `/workspace` inside the container
 
 ### Container side
@@ -61,7 +61,7 @@ Persistent Hermes state lives in a Docker named volume mounted at `/root/.hermes
 **Linux / macOS / WSL:**
 - installer is `install.sh`
 - PATH registration targets `bash`, `zsh`, `fish`
-- root installs use `/usr/local/lib/omnipod` + `/usr/local/bin/omnipod`
+- root installs use `/usr/local/lib/hades` + `/usr/local/bin/hades`
 
 **Windows:**
 - installer is `install.ps1`

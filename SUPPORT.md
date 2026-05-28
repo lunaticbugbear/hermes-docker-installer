@@ -11,7 +11,7 @@
 - Shell or terminal
 - Docker version
 - Whether you used `install.sh` or `install.ps1`
-- Omnipod version or commit
+- Hades version or commit
 - The exact command you ran
 - Relevant logs, with secrets removed
 

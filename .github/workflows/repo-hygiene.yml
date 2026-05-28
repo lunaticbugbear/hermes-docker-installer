@@ -29,6 +29,6 @@ jobs:
           test ! -f docker-compose.yml
           test ! -f bootstrap.sh
           test ! -f healthcheck.sh
-          test ! -f bin/omnipod
-          test ! -f bin/omnipod.ps1
-          test ! -f bin/omnipod.cmd
+          test ! -f bin/hades
+          test ! -f bin/hades.ps1
+          test ! -f bin/hades.cmd

@@ -1,17 +1,17 @@
-# Omnipod
+# HADES
 
 <p align="center">
   <pre>
-  ___  __  __ _  _ ____ ___  ___  ___
- / _ \|  \/  |  \| |  _ \ _ \|   \|   \
-| (_) | |\/| | |   | |_) |_) | | | | | |
- \___/|_|  |_|_|\__|  __/___/|___/|___/
-                   |_|
+ _   _    _    ____  _____ ____
+| | | |  / \  |  _ \| ____/ ___|
+| |_| | / _ \ | | | |  _| \___ \
+|  _  |/ ___ \| |_| | |___ ___) |
+|_| |_/_/   \_\____/|_____|____/
   </pre>
 </p>
 
 <p align="center">
-  <strong>Zero-dependency Docker environment for Hermes Agent.</strong><br>
+  <strong>Hermes Agent Docker Environment Script</strong><br>
   Isolated workspace. Persistent state. One command. Linux, macOS, WSL, Windows.
 </p>
 
@@ -26,7 +26,7 @@
 
 Hermes Agent is powerful. Getting it running locally is not — Python version conflicts, Chromium dependency chains, shell PATH juggling, provider credential plumbing.
 
-Omnipod wraps all of that into one installer command. The host stays clean. State survives rebuilds. You get a single control surface: `omnipod`.
+Hades wraps all of that into one installer command. The host stays clean. State survives rebuilds. You get a single control surface: `hades`.
 
 ## Install
 
@@ -47,15 +47,15 @@ The installer walks you through provider, API key, model, and port. Done in unde
 ## Quick reference
 
 ```bash
-omnipod start          # spin up
-omnipod cli            # open Hermes chat
-omnipod logs           # follow agent output
-omnipod shell          # bash into the container
-omnipod restart        # reload after config changes
-omnipod update         # rebuild image
-omnipod stop           # pause
-omnipod down           # stop + remove networks
-omnipod reset          # nuclear: wipe everything
+hades start          # spin up
+hades cli            # open Hermes chat
+hades logs           # follow agent output
+hades shell          # bash into the container
+hades restart        # reload after config changes
+hades update         # rebuild image
+hades stop           # pause
+hades down           # stop + remove networks
+hades reset          # nuclear: wipe everything
 ```
 
 Full command table and all flags: [docs/OPERATIONS.md](docs/OPERATIONS.md)
@@ -73,14 +73,14 @@ Full command table and all flags: [docs/OPERATIONS.md](docs/OPERATIONS.md)
 
 ## Config
 
-Edit `~/.omnipod/.env`, then `omnipod restart`. If you changed build-time settings (browser support, Hermes version pin): `omnipod update`.
+Edit `~/.hades/.env`, then `hades restart`. If you changed build-time settings (browser support, Hermes version pin): `hades update`.
 
 ## Uninstalling
 
 ```bash
 bash uninstall.sh                       # stop stack, keep data
 bash uninstall.sh --remove-data         # also drop the volume
-bash uninstall.sh --remove-files        # also delete ~/.omnipod
+bash uninstall.sh --remove-files        # also delete ~/.hades
 bash uninstall.sh --remove-files --remove-data  # gone
 ```
 
@@ -107,7 +107,7 @@ bash install.sh --provider openrouter --model deepseek/deepseek-v4-flash:free --
 ```text
  HOST                                   CONTAINER
 ┌───────────────────────┐     ┌──────────────────────────┐
-│ ~/.omnipod/           │     │ omnipod                   │
+│ ~/.hades/           │     │ hades                   │
 │   .env                │     │   hermes gateway run      │
 │   docker-compose.yml  │     │   API: 127.0.0.1:8642     │
 │   workspace/  ◄───────────────► /workspace              │
@@ -125,8 +125,8 @@ Workspace is bind-mounted. Hermes state lives in a named Docker volume — it su
 | Problem | Fix |
 |---|---|
 | Docker not found | Linux: `sudo systemctl start docker`. macOS: open Docker.app. Windows: open Docker Desktop. |
-| Port 8642 in use | `omnipod stop` or install with `--port 18642` |
-| Config changes not applied | `omnipod restart` (or `omnipod update` for build-time changes) |
+| Port 8642 in use | `hades stop` or install with `--port 18642` |
+| Config changes not applied | `hades restart` (or `hades update` for build-time changes) |
 | Browser tools missing | `bash install.sh --browser --force` — browser is opt-in (~450 MB) |
 
 ## CI

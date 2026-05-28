@@ -1,4 +1,4 @@
-# Omnipod Installer for Windows PowerShell
+# Hades Installer for Windows PowerShell
 # Requires Docker Desktop with WSL2 backend enabled.
 # Usage:
 #   .\install.ps1
@@ -7,13 +7,13 @@
 param(
   [string]$InstallDir = $(
     $isAdmin = [bool](([System.Security.Principal.WindowsPrincipal][System.Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator))
-    if ($isAdmin) { Join-Path $env:ProgramFiles 'omnipod' } else { "$env:USERPROFILE\.omnipod" }
+    if ($isAdmin) { Join-Path $env:ProgramFiles 'hades' } else { "$env:USERPROFILE\.hades" }
   ),
   [ValidateSet('openrouter','anthropic','openai','google','deepseek','custom')]
   [string]$Provider = 'openrouter',
   [string]$Model = 'deepseek/deepseek-v4-flash:free',
   [int]$Port = 8642,
-  [string]$ProjectName = 'omnipod',
+  [string]$ProjectName = 'hades',
   [switch]$NoStart,
   [switch]$Browser,
   [switch]$SkipBuild,
@@ -185,7 +185,7 @@ function Wait-Health() {
 
 # ── Uninstall ───────────────────────────────────────────────────
 
-Log 'Omnipod Installer for Windows'
+Log 'Hades Installer for Windows'
 
 if ($Uninstall) {
   if (-not (Test-Path $InstallDir)) {
@@ -408,7 +408,7 @@ RUN git clone --depth 1 --branch $HERMES_VERSION \
 FROM python:3.12-slim-bookworm
 ARG INSTALL_BROWSER=0
 ENV DEBIAN_FRONTEND=noninteractive \
-    OMNIPOD_HOME=/root/.hermes \
+    HADES_HOME=/root/.hermes \
     PATH=/venv/bin:/root/.local/bin:$PATH \
     PYTHONUNBUFFERED=1
 
@@ -438,9 +438,9 @@ CMD ["hermes", "gateway", "run"]
 Safe-Write 'bootstrap.sh' @'
 #!/usr/bin/env bash
 set -Eeuo pipefail
-export OMNIPOD_HOME="${OMNIPOD_HOME:-/root/.hermes}"
+export HADES_HOME="${HADES_HOME:-/root/.hermes}"
 export PATH="/venv/bin:/root/.local/bin:$PATH"
-mkdir -p "$OMNIPOD_HOME" /workspace "$OMNIPOD_HOME/logs"
+mkdir -p "$HADES_HOME" /workspace "$HADES_HOME/logs"
 
 MODEL_PROVIDER="${MODEL_PROVIDER:-openrouter}"
 MODEL_NAME="${MODEL_NAME:-deepseek/deepseek-v4-flash:free}"
@@ -448,8 +448,8 @@ API_SERVER_KEY="${API_SERVER_KEY:-change-me}"
 API_SERVER_PORT="${API_SERVER_PORT:-8642}"
 CUSTOM_BASE_URL="${CUSTOM_BASE_URL:-}"
 
-if [[ ! -f "$OMNIPOD_HOME/.env" ]]; then
-  cat > "$OMNIPOD_HOME/.env" <<EOENV
+if [[ ! -f "$HADES_HOME/.env" ]]; then
+  cat > "$HADES_HOME/.env" <<EOENV
 API_SERVER_KEY=$API_SERVER_KEY
 GATEWAY_ALLOW_ALL_USERS=true
 PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright
@@ -457,23 +457,23 @@ EOENV
 
   # Write only the relevant provider key
   case "$MODEL_PROVIDER" in
-    openrouter) echo "OPENROUTER_API_KEY=${OPEN...-}" >> "$OMNIPOD_HOME/.env" ;;
-    anthropic)  echo "ANTHROPIC_API_KEY=${ANTH...-}" >> "$OMNIPOD_HOME/.env" ;;
-    openai)     echo "OPENAI_API_KEY=${OPEN...-}" >> "$OMNIPOD_HOME/.env" ;;
+    openrouter) echo "OPENROUTER_API_KEY=${OPEN...-}" >> "$HADES_HOME/.env" ;;
+    anthropic)  echo "ANTHROPIC_API_KEY=${ANTH...-}" >> "$HADES_HOME/.env" ;;
+    openai)     echo "OPENAI_API_KEY=${OPEN...-}" >> "$HADES_HOME/.env" ;;
     google)
-      echo "GOOGLE_API_KEY=${GOOG...-}" >> "$OMNIPOD_HOME/.env"
-      echo "GEMINI_API_KEY=${GEMI...-}" >> "$OMNIPOD_HOME/.env" ;;
-    deepseek)   echo "DEEPSEEK_API_KEY=${DEEP...-}" >> "$OMNIPOD_HOME/.env" ;;
+      echo "GOOGLE_API_KEY=${GOOG...-}" >> "$HADES_HOME/.env"
+      echo "GEMINI_API_KEY=${GEMI...-}" >> "$HADES_HOME/.env" ;;
+    deepseek)   echo "DEEPSEEK_API_KEY=${DEEP...-}" >> "$HADES_HOME/.env" ;;
     custom)
-      echo "CUSTOM_API_KEY=${CUST...-}" >> "$OMNIPOD_HOME/.env"
-      echo "CUSTOM_BASE_URL=${CUSTOM_BASE_URL:-}" >> "$OMNIPOD_HOME/.env" ;;
+      echo "CUSTOM_API_KEY=${CUST...-}" >> "$HADES_HOME/.env"
+      echo "CUSTOM_BASE_URL=${CUSTOM_BASE_URL:-}" >> "$HADES_HOME/.env" ;;
   esac
 
-  chmod 600 "$OMNIPOD_HOME/.env" || true
+  chmod 600 "$HADES_HOME/.env" || true
 fi
 
-if [[ ! -f "$OMNIPOD_HOME/config.yaml" ]]; then
-  cat > "$OMNIPOD_HOME/config.yaml" <<EOCFG
+if [[ ! -f "$HADES_HOME/config.yaml" ]]; then
+  cat > "$HADES_HOME/config.yaml" <<EOCFG
 model:
   provider: "$MODEL_PROVIDER"
   default: "$MODEL_NAME"
@@ -547,7 +547,7 @@ volumes:
   hermes_home:
 '@
 
-Safe-Write 'bin/omnipod.ps1' @'
+Safe-Write 'bin/hades.ps1' @'
 param([string]$Command='help')
 $ErrorActionPreference='Stop'
 Set-Location (Split-Path $PSScriptRoot -Parent)
@@ -569,21 +569,21 @@ switch ($Command) {
 }
 '@
 
-Safe-Write 'bin/omnipod.cmd' @"
+Safe-Write 'bin/hades.cmd' @"
 @echo off
-powershell -ExecutionPolicy Bypass -File "%~dp0omnipod.ps1" %*
+powershell -ExecutionPolicy Bypass -File "%~dp0hades.ps1" %*
 "@
 
 Safe-Write 'README.md' @"
-# Omnipod
+# Hades
 
 Commands:
 
-    omnipod start
-    omnipod cli
-    omnipod logs
-    omnipod status
-    omnipod update
+    hades start
+    hades cli
+    hades logs
+    hades status
+    hades update
 
 API server:
 
@@ -618,8 +618,8 @@ if ($SkipBuild) {
   }
 }
 
-Ok 'Omnipod is installed.'
+Ok 'Hades is installed.'
 Write-Host "Install directory: $InstallDir"
-Write-Host "Open CLI: omnipod cli"
-Write-Host "Logs: omnipod logs"
+Write-Host "Open CLI: hades cli"
+Write-Host "Logs: hades logs"
 Write-Host "API server: http://localhost:$Port"

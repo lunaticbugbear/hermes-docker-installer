@@ -36,7 +36,7 @@ jobs:
       - name: Generate release notes body
         run: |
           {
-            echo "## Omnipod release"
+            echo "## Hades release"
             echo
             echo "### Included files"
             echo "- install.sh"

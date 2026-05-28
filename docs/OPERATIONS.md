@@ -25,7 +25,7 @@ The repo is installer source only. Generated at install time:
 - `docker-compose.yml`
 - `bootstrap.sh`
 - `healthcheck.sh`
-- `bin/omnipod`, `bin/omnipod.ps1`, `bin/omnipod.cmd`
+- `bin/hades`, `bin/hades.ps1`, `bin/hades.cmd`
 - `.env`
 - `workspace/`
 
@@ -46,9 +46,9 @@ for p in pathlib.Path('.github/workflows').glob('*.yml'):
     yaml.safe_load(p.read_text())
 print('workflow-yaml-ok')
 PY
-HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-token-123456789 bash install.sh --skip-build --force --dir /tmp/omnipod-ci
-cd /tmp/omnipod-ci && docker compose config
-bash -n bootstrap.sh healthcheck.sh bin/omnipod
+HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-token-123456789 bash install.sh --skip-build --force --dir /tmp/hades-ci
+cd /tmp/hades-ci && docker compose config
+bash -n bootstrap.sh healthcheck.sh bin/hades
 ```
 
 Windows parser check (optional):
@@ -69,7 +69,7 @@ if ($errors) { $errors | Format-List; exit 1 }
 ### Regenerate runtime files without building
 
 ```bash
-HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-token-123456789 bash install.sh --skip-build --force --dir /tmp/omnipod-ci
+HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-token-123456789 bash install.sh --skip-build --force --dir /tmp/hades-ci
 ```
 
 Useful for checking generated Compose config, paths, or flag handling without spinning up Docker.
@@ -77,27 +77,27 @@ Useful for checking generated Compose config, paths, or flag handling without sp
 ### Full smoke test
 
 ```bash
-HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-token-123456789 bash install.sh --force --dir /tmp/omnipod-smoke
-cd /tmp/omnipod-smoke
-./bin/omnipod start
+HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-token-123456789 bash install.sh --force --dir /tmp/hades-smoke
+cd /tmp/hades-smoke
+./bin/hades start
 curl -sf http://127.0.0.1:8642/health
-./bin/omnipod logs
-./bin/omnipod down
+./bin/hades logs
+./bin/hades down
 ```
 
 ### Check a live install
 
 ```bash
-omnipod status
-omnipod url
-omnipod logs
-omnipod shell
+hades status
+hades url
+hades logs
+hades shell
 ```
 
 If the wrapper isn't in PATH:
 
 ```bash
-cd ~/.omnipod
+cd ~/.hades
 docker compose ps
 docker compose logs --tail 120 hermes
 curl -sf http://127.0.0.1:8642/health
@@ -126,11 +126,11 @@ Common causes:
 
 ### API health check fails
 
-1. `omnipod status` — is the container up?
-2. `omnipod logs` — any errors?
+1. `hades status` — is the container up?
+2. `hades logs` — any errors?
 3. Check `.env` for the right bind address and port
 4. `curl -sf http://127.0.0.1:8642/health`
-5. If version-related: `omnipod update`
+5. If version-related: `hades update`
 
 ### Suspected regression in generated files
 
@@ -176,15 +176,15 @@ If a release breaks installs:
 If a user's runtime is broken but their data should survive:
 
 ```bash
-omnipod down
-omnipod update
-omnipod start
+hades down
+hades update
+hades start
 ```
 
 If they're OK losing the persistent volume:
 
 ```bash
-omnipod reset
+hades reset
 ```
 
 Warn them first — `reset` removes Hermes sessions, memory, and config from the named volume.

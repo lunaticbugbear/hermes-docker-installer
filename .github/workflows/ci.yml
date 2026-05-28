@@ -54,21 +54,21 @@ jobs:
       - uses: actions/checkout@v6
       - name: Generate files without build
         run: |
-          HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-token-123456789 bash install.sh --skip-build --force --dir "$RUNNER_TEMP/omnipod-ci"
+          HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-token-123456789 bash install.sh --skip-build --force --dir "$RUNNER_TEMP/hades-ci"
       - name: Validate compose config
-        working-directory: ${{ runner.temp }}/omnipod-ci
+        working-directory: ${{ runner.temp }}/hades-ci
         run: docker compose config
       - name: Check generated helper syntax
-        working-directory: ${{ runner.temp }}/omnipod-ci
+        working-directory: ${{ runner.temp }}/hades-ci
         run: |
           bash -n bootstrap.sh
           bash -n healthcheck.sh
-          bash -n bin/omnipod
+          bash -n bin/hades
       - name: Assert browser is opt-in by default
-        working-directory: ${{ runner.temp }}/omnipod-ci
+        working-directory: ${{ runner.temp }}/hades-ci
         run: grep -q '^INSTALL_BROWSER=0$' .env
       - name: Assert version pin is generated
-        working-directory: ${{ runner.temp }}/omnipod-ci
+        working-directory: ${{ runner.temp }}/hades-ci
         run: grep -q '^HERMES_VERSION=' .env
 
   docs:

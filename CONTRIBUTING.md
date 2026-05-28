@@ -1,6 +1,6 @@
 # Contributing
 
-Omnipod's job is to be boring and reliable. A non-technical user should be able to install Hermes Agent on Linux, macOS, Windows, or WSL without reading a manual. Changes should preserve that.
+Hades's job is to be boring and reliable. A non-technical user should be able to install Hermes Agent on Linux, macOS, Windows, or WSL without reading a manual. Changes should preserve that.
 
 ## Before submitting
 
@@ -9,9 +9,9 @@ Run these locally:
 ```bash
 bash -n install.sh uninstall.sh
 shellcheck -x install.sh uninstall.sh
-HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=*** bash install.sh --skip-build --force --port 18642 --dir /tmp/omnipod-ci
-cd /tmp/omnipod-ci && docker compose config
-bash -n bootstrap.sh healthcheck.sh bin/omnipod
+HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=*** bash install.sh --skip-build --force --port 18642 --dir /tmp/hades-ci
+cd /tmp/hades-ci && docker compose config
+bash -n bootstrap.sh healthcheck.sh bin/hades
 ```
 
 Windows:

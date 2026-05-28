@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.2.0] - Unreleased
 
+- Renamed project from Omnipod to **HADES** (Hermes Agent Docker Environment Script). Install directory is now `~/.hades/`, control command is now `hades`.
 - Modernized release pipeline to use native GitHub CLI (`gh release`) instead of deprecated Node actions.
 - Introduced repository social preview assets.
 - Refactored all documentation to be concise and direct.
@@ -13,7 +14,7 @@ All notable changes to this project will be documented in this file.
 
 - Added isolation guards (`PYTHONPATH` / `PYTHONHOME`) to prevent host environment bleed during builds.
 - Added path registration for login shells (bash, zsh, fish).
-- Built Windows integration with `omnipod.cmd` wrapper and PowerShell profile path registration.
+- Built Windows integration with `hades.cmd` wrapper and PowerShell profile path registration.
 - Switched interactive prompts to raw TTY `/dev/tty` so piping (`curl | bash`) works reliably.
 - Hardened default API bind to `127.0.0.1` instead of `0.0.0.0`.
 - Added uninstaller flags (`--dir`, `--remove-data`, `--remove-files`).
@@ -25,5 +26,5 @@ All notable changes to this project will be documented in this file.
 - Added cross-platform Docker scaffolding (Linux, macOS, Windows, WSL).
 - Implemented multi-stage Dockerfile separating build and runtime.
 - Built interactive setup flow for providers, models, and port allocation.
-- Created `omnipod` command wrapper for container lifecycle management.
+- Created `hades` command wrapper for container lifecycle management.
 - Implemented automatic host dependency checks (Docker Daemon availability).

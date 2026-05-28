@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Omnipod Installer
+# Hades Installer
 # Cross-platform installer for Linux, macOS, and Windows via WSL/Git Bash.
 # Windows native users should use install.ps1 or run this in WSL.
 #
@@ -10,11 +10,11 @@
 #   HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=... bash install.sh
 #
 # Options:
-#   --dir PATH              Install directory, default: ~/.omnipod
+#   --dir PATH              Install directory, default: ~/.hades
 #   --provider PROVIDER     openrouter|anthropic|openai|google|deepseek|custom, default: openrouter
 #   --model MODEL           Model name, default: deepseek/deepseek-v4-flash:free
 #   --port PORT             Host/API port, default: 8642
-#   --name NAME             Docker Compose project/container prefix, default: omnipod
+#   --name NAME             Docker Compose project/container prefix, default: hades
 #   --no-start              Build but do not start
 #   --browser               Include Playwright + Chromium (~450 MB, +5 min build)
 #   --skip-build            Generate files only; do not build/start, useful for CI
@@ -36,12 +36,12 @@ fi
 VERSION="1.1.3"
 DEFAULT_DIR=""
 if [ "$(id -u)" -eq 0 ]; then
-  DEFAULT_DIR="/usr/local/lib/omnipod"
+  DEFAULT_DIR="/usr/local/lib/hades"
 else
-  DEFAULT_DIR="$HOME/.omnipod"
+  DEFAULT_DIR="$HOME/.hades"
 fi
 INSTALL_DIR="$DEFAULT_DIR"
-PROJECT_NAME="omnipod"
+PROJECT_NAME="hades"
 PROVIDER="openrouter"
 MODEL="deepseek/deepseek-v4-flash:free"
 API_PORT="8642"
@@ -86,7 +86,7 @@ if [[ "$NONINTERACTIVE" != "1" ]]; then
   if (: </dev/tty) 2>/dev/null; then
     exec < /dev/tty
     echo
-    echo "Omnipod Installer"
+    echo "Hades Installer"
     echo "Choose your model provider:"
     echo "  1) OpenRouter  recommended, many models"
     echo "  2) Anthropic"
@@ -517,7 +517,7 @@ RUN git clone --depth 1 --branch $HERMES_VERSION \
 FROM python:3.12-slim-bookworm
 ARG INSTALL_BROWSER=0
 ENV DEBIAN_FRONTEND=noninteractive \
-    OMNIPOD_HOME=/root/.hermes \
+    HADES_HOME=/root/.hermes \
     PATH=/venv/bin:/root/.local/bin:$PATH \
     PYTHONUNBUFFERED=1
 
@@ -549,9 +549,9 @@ EOF
     cat > bootstrap.sh <<'EOF'
 #!/usr/bin/env bash
 set -Eeuo pipefail
-export OMNIPOD_HOME="${OMNIPOD_HOME:-/root/.hermes}"
+export HADES_HOME="${HADES_HOME:-/root/.hermes}"
 export PATH="/venv/bin:/root/.local/bin:$PATH"
-mkdir -p "$OMNIPOD_HOME" /workspace "$OMNIPOD_HOME/logs"
+mkdir -p "$HADES_HOME" /workspace "$HADES_HOME/logs"
 
 MODEL_PROVIDER="${MODEL_PROVIDER:-openrouter}"
 MODEL_NAME="${MODEL_NAME:-deepseek/deepseek-v4-flash:free}"
@@ -559,8 +559,8 @@ API_SERVER_KEY="${API_SERVER_KEY:-change-me}"
 API_SERVER_PORT="${API_SERVER_PORT:-8642}"
 CUSTOM_BASE_URL="${CUSTOM_BASE_URL:-}"
 
-if [[ ! -f "$OMNIPOD_HOME/.env" ]]; then
-  cat > "$OMNIPOD_HOME/.env" <<EOENV
+if [[ ! -f "$HADES_HOME/.env" ]]; then
+  cat > "$HADES_HOME/.env" <<EOENV
 API_SERVER_KEY=$API_SERVER_KEY
 GATEWAY_ALLOW_ALL_USERS=true
 PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright
@@ -568,22 +568,22 @@ EOENV
 
   # Write only the relevant provider key(s)
   case "$MODEL_PROVIDER" in
-    openrouter) echo "OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}" >> "$OMNIPOD_HOME/.env" ;;
-    anthropic)  echo "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}" >> "$OMNIPOD_HOME/.env" ;;
-    openai)     echo "OPENAI_API_KEY=${OPENAI_API_KEY:-}" >> "$OMNIPOD_HOME/.env" ;;
+    openrouter) echo "OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}" >> "$HADES_HOME/.env" ;;
+    anthropic)  echo "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}" >> "$HADES_HOME/.env" ;;
+    openai)     echo "OPENAI_API_KEY=${OPENAI_API_KEY:-}" >> "$HADES_HOME/.env" ;;
     google)
-      echo "GOOGLE_API_KEY=${GOOGLE_API_KEY:-}" >> "$OMNIPOD_HOME/.env"
-      echo "GEMINI_API_KEY=${GEMINI_API_KEY:-}" >> "$OMNIPOD_HOME/.env" ;;
-    deepseek)   echo "DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}" >> "$OMNIPOD_HOME/.env" ;;
+      echo "GOOGLE_API_KEY=${GOOGLE_API_KEY:-}" >> "$HADES_HOME/.env"
+      echo "GEMINI_API_KEY=${GEMINI_API_KEY:-}" >> "$HADES_HOME/.env" ;;
+    deepseek)   echo "DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}" >> "$HADES_HOME/.env" ;;
     custom)
-      echo "CUSTOM_API_KEY=${CUSTOM_API_KEY:-}" >> "$OMNIPOD_HOME/.env"
-      echo "CUSTOM_BASE_URL=${CUSTOM_BASE_URL:-}" >> "$OMNIPOD_HOME/.env" ;;
+      echo "CUSTOM_API_KEY=${CUSTOM_API_KEY:-}" >> "$HADES_HOME/.env"
+      echo "CUSTOM_BASE_URL=${CUSTOM_BASE_URL:-}" >> "$HADES_HOME/.env" ;;
   esac
-  chmod 600 "$OMNIPOD_HOME/.env" || true
+  chmod 600 "$HADES_HOME/.env" || true
 fi
 
-if [[ ! -f "$OMNIPOD_HOME/config.yaml" ]]; then
-  cat > "$OMNIPOD_HOME/config.yaml" <<EOCFG
+if [[ ! -f "$HADES_HOME/config.yaml" ]]; then
+  cat > "$HADES_HOME/config.yaml" <<EOCFG
 model:
   provider: "$MODEL_PROVIDER"
   default: "$MODEL_NAME"
@@ -664,8 +664,8 @@ volumes:
 EOF
   fi
 
-  if safe_write bin/omnipod; then
-    cat > bin/omnipod <<'EOF'
+  if safe_write bin/hades; then
+    cat > bin/hades <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -688,8 +688,8 @@ case "$cmd" in
   key) . ./.env; echo "${API_SERVER_KEY:-}" ;;
   *)
     cat <<HELP
-Omnipod helper
-Usage: omnipod <command>
+Hades helper
+Usage: hades <command>
 Commands:
   start    Start Hermes gateway/API server
   stop     Stop container
@@ -708,19 +708,19 @@ HELP
     ;;
 esac
 EOF
-    chmod +x bin/omnipod
+    chmod +x bin/hades
   fi
 
   # Shell configuration & Path setup (Nous-Style)
   if [ "$(id -u)" -eq 0 ]; then
-    if [ ! -L "/usr/local/bin/omnipod" ]; then
-      ln -sf "$INSTALL_DIR/bin/omnipod" "/usr/local/bin/omnipod"
-      ok "Linked omnipod to /usr/local/bin/omnipod"
+    if [ ! -L "/usr/local/bin/hades" ]; then
+      ln -sf "$INSTALL_DIR/bin/hades" "/usr/local/bin/hades"
+      ok "Linked hades to /usr/local/bin/hades"
     fi
   else
     local command_link_dir="$HOME/.local/bin"
     mkdir -p "$command_link_dir"
-    ln -sf "$INSTALL_DIR/bin/omnipod" "$command_link_dir/omnipod"
+    ln -sf "$INSTALL_DIR/bin/hades" "$command_link_dir/hades"
     
     if ! echo "$PATH" | tr ':' '\n' | grep -q "^$command_link_dir$"; then
       local shell_configs=()
@@ -759,7 +759,7 @@ EOF
         if ! grep -v '^[[:space:]]*#' "$config_file" 2>/dev/null | grep -qE 'PATH=.*\.local/bin'; then
           {
             echo ""
-            echo "# Omnipod Installer - ensure ~/.local/bin is on PATH"
+            echo "# Hades Installer - ensure ~/.local/bin is on PATH"
             echo "$path_line"
           } >> "$config_file"
           ok "Added ~/.local/bin to PATH in $config_file"
@@ -770,7 +770,7 @@ EOF
         if ! grep -q 'fish_add_path.*\.local/bin' "$fish_config" 2>/dev/null; then
           {
             echo ""
-            echo "# Omnipod Installer - ensure ~/.local/bin is on PATH"
+            echo "# Hades Installer - ensure ~/.local/bin is on PATH"
             # shellcheck disable=SC2016
             echo 'fish_add_path "$HOME/.local/bin"'
           } >> "$fish_config"
@@ -782,19 +782,19 @@ EOF
 
   if safe_write README.md; then
     cat > README.md <<EOF
-# Omnipod
+# Hades
 
-Installed by Omnipod Public Installer v$VERSION.
+Installed by Hades Public Installer v$VERSION.
 
 ## Commands
 
-    ./bin/omnipod start
-    ./bin/omnipod cli
-    ./bin/omnipod logs
-    ./bin/omnipod status
-    ./bin/omnipod restart
-    ./bin/omnipod update
-    ./bin/omnipod down
+    ./bin/hades start
+    ./bin/hades cli
+    ./bin/hades logs
+    ./bin/hades status
+    ./bin/hades restart
+    ./bin/hades update
+    ./bin/hades down
 
 ## API Server
 
@@ -804,7 +804,7 @@ URL:
 
 API key:
 
-    ./bin/omnipod key
+    ./bin/hades key
 
 ## Config
 
@@ -814,7 +814,7 @@ Edit provider/model/API keys:
 
 Then restart:
 
-    ./bin/omnipod restart
+    ./bin/hades restart
 
 ## Workspace
 
@@ -830,7 +830,7 @@ Container folder:
 
 This deletes Hermes container data:
 
-    ./bin/omnipod reset
+    ./bin/hades reset
 EOF
   fi
 }
@@ -865,7 +865,7 @@ build_and_start() {
   log "Building Docker image. Add --browser for Playwright/Chromium (~450 MB extra, default: skip)."
   
   local build_log
-  build_log="$(mktemp 2>/dev/null || echo "/tmp/omnipod-build.$$.log")"
+  build_log="$(mktemp 2>/dev/null || echo "/tmp/hades-build.$$.log")"
   if ! $COMPOSE build > "$build_log" 2>&1; then
     err "Failed to build Docker images."
     err "Build logs:"
@@ -936,19 +936,19 @@ Install directory:
   $INSTALL_DIR
 
 Main helper:
-  $INSTALL_DIR/bin/omnipod
+  $INSTALL_DIR/bin/hades
 
 Open Hermes CLI:
-  cd $INSTALL_DIR && ./bin/omnipod cli
+  cd $INSTALL_DIR && ./bin/hades cli
 
 View logs:
-  cd $INSTALL_DIR && ./bin/omnipod logs
+  cd $INSTALL_DIR && ./bin/hades logs
 
 API server:
   http://localhost:$API_PORT
 
 API key:
-  cd $INSTALL_DIR && ./bin/omnipod key
+  cd $INSTALL_DIR && ./bin/hades key
 
 Edit API keys/model:
   $INSTALL_DIR/.env

@@ -14,7 +14,7 @@ labels: bug
 - Shell / terminal:
 - Docker version:
 - Install method: `install.sh` / `install.ps1`
-- Omnipod version or commit:
+- Hades version or commit:
 
 ## Command used
 

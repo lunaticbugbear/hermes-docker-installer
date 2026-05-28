@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
-# Omnipod — robust version
+# Hades — robust version
 set -Eeuo pipefail
 
-INSTALL_DIR="${OMNIPOD_HOME:-$HOME/.omnipod}"
+INSTALL_DIR="${HADES_HOME:-$HOME/.hades}"
 REMOVE_FILES="${REMOVE_FILES:-0}"
 REMOVE_DATA="${REMOVE_DATA:-0}"
 
 usage() {
   cat <<'EOF'
-Omnipod uninstaller
+Hades uninstaller
 
 Usage:
   uninstall.sh [--dir PATH] [--remove-data] [--remove-files]
 
 Options:
-  --dir PATH       Install directory, default: ~/.omnipod
+  --dir PATH       Install directory, default: ~/.hades
   --remove-data   Remove Docker volumes too
   --remove-files  Remove generated install directory too
   -h, --help      Show help
@@ -54,7 +54,7 @@ fi
 # Stop containers (if compose available)
 if [[ ${#DC[@]} -gt 0 ]]; then
   if docker info >/dev/null 2>&1; then
-    echo "Stopping Omnipod Docker stack..."
+    echo "Stopping Hades Docker stack..."
     if [[ "$REMOVE_DATA" == "1" ]]; then
       "${DC[@]}" down -v --remove-orphans 2>&1 || true
     else
@@ -70,7 +70,7 @@ if [[ "$REMOVE_FILES" == "1" ]]; then
   rm -rf "$INSTALL_DIR"
   echo "Removed install directory: $INSTALL_DIR"
 else
-  echo "Stopped Omnipod Docker stack. Files kept at: $INSTALL_DIR"
+  echo "Stopped Hades Docker stack. Files kept at: $INSTALL_DIR"
   echo ""
   echo "To remove data volume too:"
   echo "  $0 --remove-data"
