@@ -2,7 +2,9 @@
 
 ## 1.1.6 (2026-05-28)
 - Added maintainer-facing architecture and release-process documentation under `docs/`.
+- Added a maintainer operations runbook covering validation, triage, rollback, and runtime recovery.
 - Wired CI and README to enforce and reference maintainer docs.
+- Tightened repository governance with stronger branch protection, metadata, and label policy.
 
 ## 1.1.5 (2026-05-28)
 - Added release automation with GitHub Releases assets and SHA256 checksums.
