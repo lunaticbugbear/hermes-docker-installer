@@ -5,6 +5,7 @@
 - Added repository hygiene workflow to catch generated artifacts and secret-like strings.
 - Added `SUPPORT.md` and `CODE_OF_CONDUCT.md`.
 - Expanded CI checks to enforce repository standards files.
+- Bumped GitHub Actions checkout usage to `actions/checkout@v6`.
 - Documented release verification and support standards in the README.
 
 ## 1.1.4 (2026-05-28)
