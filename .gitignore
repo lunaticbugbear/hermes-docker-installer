@@ -11,6 +11,8 @@ bootstrap.sh
 healthcheck.sh
 docker-compose.yml
 bin/omnipod
+bin/omnipod.ps1
+bin/omnipod.cmd
 omnipod.ps1
 
 # ── Docker ──────────────────────────────────────────────

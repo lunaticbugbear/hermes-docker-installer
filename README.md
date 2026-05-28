@@ -9,7 +9,7 @@
                    |_|                  
   </pre>
   <strong>Zero-Dependency Hermes Agent Docker Environment.</strong><br>
-  Isolated workspace. Persistent configuration. Local API gateway. Works on Linux, macOS, and Windows.
+  Isolated workspace. Persistent configuration. Local API gateway. Works on Linux, macOS, WSL, and Windows.
 </p>
 
 <p align="center">
@@ -67,6 +67,20 @@
 
 ---
 
+## Why Omnipod exists
+
+Hermes Agent is powerful, but local setup can sprawl quickly: Python toolchains, browser dependencies, shell PATH quirks, Docker availability, and provider credential handling.
+
+Omnipod compresses that into one predictable path:
+
+- keep the host machine clean
+- generate a reproducible runtime layout
+- preserve persistent Hermes state across rebuilds and restarts
+- default to safer networking behavior
+- give operators one control surface: `omnipod`
+
+---
+
 ## Quick Start
 
 ### Linux / macOS / WSL
@@ -84,6 +98,15 @@ powershell -ExecutionPolicy Bypass -c "Invoke-WebRequest -Uri 'https://raw.githu
 ```
 
 *The installer checks dependencies, detects your platform, asks for your provider, API key, and model, and registers the global `omnipod` helper command.*
+
+### Interactive setup flow
+
+During interactive setup, Omnipod asks in this order:
+
+1. which provider / model family you want to use
+2. the API key for that provider
+3. the exact model name (with a smart default)
+4. the local API port
 
 ---
 
@@ -283,6 +306,12 @@ bash uninstall.sh --remove-files --remove-data # Complete system clean
 .\uninstall.ps1 -RemoveFiles -RemoveData
 ```
 
+Defaults are conservative:
+
+- stack shutdown is attempted only when Docker is available
+- volumes stay unless data removal is explicitly requested
+- files stay unless file removal is explicitly requested
+
 ---
 
 ## Troubleshooting
@@ -300,6 +329,52 @@ If the default port `8642` is bound by another service, the installer will sugge
 ```bash
 bash install.sh --port 18642
 ```
+
+### Rebuild after config changes
+
+Most `.env` changes only need a restart:
+
+```bash
+omnipod restart
+```
+
+If you changed build-time settings such as browser support or the Hermes version pin:
+
+```bash
+omnipod update
+```
+
+### Browser tools are missing
+
+Browser automation is opt-in. Re-run with browser support enabled:
+
+```bash
+bash install.sh --browser --force
+```
+
+---
+
+## Quality gates
+
+Every push validates:
+
+- Bash syntax
+- ShellCheck
+- PowerShell parser correctness
+- generated Compose config validity
+- generated helper script syntax
+- uninstall safety behavior
+- docs sanity
+- Docker build + API health smoke test on `main`
+
+---
+
+## Repository standards
+
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution and validation expectations
+- [`SECURITY.md`](SECURITY.md) — reporting guidance and hardening notes
+- [`.editorconfig`](.editorconfig) — formatting baseline across editors
+- [`.github/CODEOWNERS`](.github/CODEOWNERS) — ownership defaults
 
 ---
 

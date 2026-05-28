@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.4 (2026-05-28)
+- Reworked repository scaffolding to a top-tier standard with `.editorconfig`, `CODEOWNERS`, Dependabot, issue templates, and PR template.
+- Upgraded GitHub Actions checkout to `actions/checkout@v5` to remove Node 20 deprecation warnings.
+- Expanded contributing and security guidance.
+- Polished README with stronger product framing, setup flow explanation, troubleshooting, quality gates, and repository standards.
+- Tightened `.gitignore` for generated Omnipod helper files.
+
 ## 1.1.3 (2026-05-28)
 - Upgraded installer robustness to NousResearch-grade standards.
 - Added environment isolation guards (`PYTHONPATH`, `PYTHONHOME`) to prevent builder shadowing.

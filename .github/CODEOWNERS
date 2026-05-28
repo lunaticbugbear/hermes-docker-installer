@@ -1,0 +1,14 @@
+# Default ownership
+* @lunaticbugbear
+
+# CI / automation
+/.github/ @lunaticbugbear
+
+# Core installer paths
+/install.sh @lunaticbugbear
+/install.ps1 @lunaticbugbear
+/uninstall.sh @lunaticbugbear
+/uninstall.ps1 @lunaticbugbear
+/README.md @lunaticbugbear
+/SECURITY.md @lunaticbugbear
+/CONTRIBUTING.md @lunaticbugbear

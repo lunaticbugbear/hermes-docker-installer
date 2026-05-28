@@ -18,7 +18,7 @@ jobs:
     name: Shell scripts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install shellcheck
         run: sudo apt-get update && sudo apt-get install -y shellcheck
       - name: Bash syntax
@@ -36,7 +36,7 @@ jobs:
     name: PowerShell scripts
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Parse PowerShell scripts
         shell: pwsh
         run: |
@@ -51,7 +51,7 @@ jobs:
     name: Generated Docker Compose config
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Generate files without build
         run: |
           HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-token-123456789 bash install.sh --skip-build --force --dir "$RUNNER_TEMP/omnipod-ci"
@@ -75,7 +75,7 @@ jobs:
     name: Docs sanity
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Required files exist
         run: |
           test -f README.md
@@ -83,6 +83,14 @@ jobs:
           test -f LICENSE
           test -f SECURITY.md
           test -f CONTRIBUTING.md
+          test -f .editorconfig
+          test -f .github/CODEOWNERS
+          test -f .github/dependabot.yml
+          test -f .github/ISSUE_TEMPLATE/bug_report.md
+          test -f .github/ISSUE_TEMPLATE/feature_request.md
+          test -f .github/ISSUE_TEMPLATE/config.yml
+          test -f .github/PULL_REQUEST_TEMPLATE/default.md
+          test -f .github/FUNDING.yml
           test -f install.sh
           test -f install.ps1
           test -f uninstall.sh
@@ -97,13 +105,17 @@ jobs:
         run: |
           grep -q 'raw.githubusercontent.com/lunaticbugbear/hermes-docker-installer/main/install.sh' README.md
           grep -q 'raw.githubusercontent.com/lunaticbugbear/hermes-docker-installer/main/install.ps1' README.md
+      - name: Repo standards are documented
+        run: |
+          grep -q '## Quality gates' README.md
+          grep -q '## Repository standards' README.md
 
   smoke:
     name: Docker build + smoke test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Generate files
         run: |
           HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-token-123456789 bash install.sh --skip-build --force --dir "$RUNNER_TEMP/hermes-smoke"

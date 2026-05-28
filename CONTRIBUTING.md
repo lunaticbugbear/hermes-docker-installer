@@ -1,5 +1,9 @@
 # Contributing
 
+Thanks for improving Omnipod.
+
+This repository aims to feel boringly reliable: install should be predictable, rollback-friendly, and easy to debug across Linux, macOS, Windows, and WSL.
+
 ## Quality bar
 
 Changes to this installer should preserve the goal: a non-technical user can install Hermes Agent on Linux, macOS, Windows, or WSL with minimal instructions.
@@ -9,8 +13,9 @@ Before submitting a change:
 ```bash
 bash -n install.sh uninstall.sh
 shellcheck -x install.sh uninstall.sh
-HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-...6789 bash install.sh --skip-build --force --port 18642 --dir /tmp/omnipod-ci
+HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=*** bash install.sh --skip-build --force --port 18642 --dir /tmp/omnipod-ci
 cd /tmp/omnipod-ci && docker compose config
+bash -n bootstrap.sh healthcheck.sh bin/omnipod
 ```
 
 On Windows:
@@ -18,6 +23,9 @@ On Windows:
 ```powershell
 $errors = $null
 [System.Management.Automation.PSParser]::Tokenize((Get-Content -Raw .\install.ps1), [ref]$errors) | Out-Null
+if ($errors) { $errors | Format-List; exit 1 }
+$errors = $null
+[System.Management.Automation.PSParser]::Tokenize((Get-Content -Raw .\uninstall.ps1), [ref]$errors) | Out-Null
 if ($errors) { $errors | Format-List; exit 1 }
 ```
 
@@ -29,3 +37,11 @@ if ($errors) { $errors | Format-List; exit 1 }
 - Do not make destructive uninstall the default.
 - Prefer explicit helper commands over hidden magic.
 - Add troubleshooting docs for every common failure mode discovered.
+
+## Review checklist
+
+- Is the change cross-platform or intentionally scoped?
+- Does it preserve current flags and defaults unless explicitly changed?
+- Does uninstall remain conservative by default?
+- Are docs, examples, and CI checks updated together?
+- Is the error output actionable for a user who is not deeply technical?

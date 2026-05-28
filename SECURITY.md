@@ -30,3 +30,11 @@ The installer:
 - mounts a user workspace into `/workspace`
 
 Users should not expose the API port publicly unless they understand the risk and protect it with network controls and a strong API key.
+
+## Hardening guidance
+
+- Keep Docker Desktop / Docker Engine updated.
+- Prefer the default loopback bind (`127.0.0.1`) unless remote access is required.
+- Rotate provider keys if they were ever pasted into public logs or shells with shared history.
+- Review mounted project contents before giving Hermes access to sensitive repositories.
+- If publishing a bug report, redact `.env` values, bearer keys, tokens, cookies, and internal hostnames.
