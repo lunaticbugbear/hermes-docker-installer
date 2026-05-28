@@ -30,11 +30,21 @@ Hermes Agent is powerful. Getting it running locally is not — Python version c
 
 HADES wraps all of that into one installer command. The host stays clean. State survives rebuilds. You get a single control surface: `hades`.
 
-## Prerequisites
+## Environment notes
 
-- **Linux**: Docker Engine + Docker Compose v2, `curl`
-- **macOS & Windows**: Docker Desktop
-- **WSL2**: Docker Desktop (WSL integration enabled)
+The installer checks for Docker automatically and will try to install or start it when possible:
+
+- **Linux**: attempts Docker Engine install if Docker is missing
+- **macOS**: attempts Docker Desktop install/start
+- **Windows (PowerShell)**: attempts Docker Desktop install/start
+- **WSL2**: expects Docker Desktop on the Windows host with WSL integration enabled
+
+You do not need to preinstall Docker manually unless automatic setup fails or your environment blocks it.
+
+You still need:
+- a supported shell (`bash` or PowerShell)
+- network access to download installer/runtime dependencies
+- an API key for your chosen model provider
 
 ## Install
 
