@@ -1,0 +1,61 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build release notes and publish assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p dist
+          cp install.sh dist/install.sh
+          cp install.ps1 dist/install.ps1
+          cp uninstall.sh dist/uninstall.sh
+          cp uninstall.ps1 dist/uninstall.ps1
+          cp README.md LICENSE CHANGELOG.md SECURITY.md SUPPORT.md dist/
+          (cd dist && sha256sum * > SHA256SUMS)
+
+      - name: Generate release notes body
+        run: |
+          {
+            echo "## Omnipod release"
+            echo
+            echo "### Included files"
+            echo "- install.sh"
+            echo "- install.ps1"
+            echo "- uninstall.sh"
+            echo "- uninstall.ps1"
+            echo "- SHA256SUMS"
+            echo
+            echo "### Verification"
+            echo '```bash'
+            echo 'sha256sum -c SHA256SUMS'
+            echo '```'
+          } > RELEASE_NOTES.md
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: RELEASE_NOTES.md
+          files: |
+            dist/install.sh
+            dist/install.ps1
+            dist/uninstall.sh
+            dist/uninstall.ps1
+            dist/README.md
+            dist/LICENSE
+            dist/CHANGELOG.md
+            dist/SECURITY.md
+            dist/SUPPORT.md
+            dist/SHA256SUMS

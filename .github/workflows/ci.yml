@@ -82,10 +82,14 @@ jobs:
           test -f CHANGELOG.md
           test -f LICENSE
           test -f SECURITY.md
+          test -f SUPPORT.md
+          test -f CODE_OF_CONDUCT.md
           test -f CONTRIBUTING.md
           test -f .editorconfig
           test -f .github/CODEOWNERS
           test -f .github/dependabot.yml
+          test -f .github/workflows/release.yml
+          test -f .github/workflows/repo-hygiene.yml
           test -f .github/ISSUE_TEMPLATE/bug_report.md
           test -f .github/ISSUE_TEMPLATE/feature_request.md
           test -f .github/ISSUE_TEMPLATE/config.yml

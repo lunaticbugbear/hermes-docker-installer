@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.5 (2026-05-28)
+- Added release automation with GitHub Releases assets and SHA256 checksums.
+- Added repository hygiene workflow to catch generated artifacts and secret-like strings.
+- Added `SUPPORT.md` and `CODE_OF_CONDUCT.md`.
+- Expanded CI checks to enforce repository standards files.
+- Documented release verification and support standards in the README.
+
 ## 1.1.4 (2026-05-28)
 - Reworked repository scaffolding to a top-tier standard with `.editorconfig`, `CODEOWNERS`, Dependabot, issue templates, and PR template.
 - Upgraded GitHub Actions checkout to `actions/checkout@v5` to remove Node 20 deprecation warnings.
