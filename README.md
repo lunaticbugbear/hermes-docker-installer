@@ -105,17 +105,17 @@ bash install.sh --provider openrouter --model deepseek/deepseek-v4-flash:free --
 ## Architecture
 
 ```text
- HOST                                   CONTAINER
-┌───────────────────────┐     ┌──────────────────────────┐
-│ ~/.hades/           │     │ hades                   │
-│   .env                │     │   hermes gateway run      │
-│   docker-compose.yml  │     │   API: 127.0.0.1:8642     │
-│   workspace/  ◄───────────────► /workspace              │
-│                       │     │                            │
-└───────────────────────┘     │  /root/.hermes ◄─────────┼── volume
-                               │  (sessions, memory,      │
-                               │   skills, config)         │
-                               └──────────────────────────┘
+ HOST                                    CONTAINER
+┌────────────────────────┐     ┌─────────────────────────────┐
+│ ~/.hades/              │     │ hades                       │
+│   .env                 │     │   hermes gateway run        │
+│   docker-compose.yml   │     │   API: 127.0.0.1:8642       │
+│   workspace/  ◄────────────────► /workspace               │
+│                        │     │                              │
+└────────────────────────┘     │  /root/.hermes ◄────────────┼── volume
+                                │  (sessions, memory,         │
+                                │   skills, config)           │
+                                └─────────────────────────────┘
 ```
 
 Workspace is bind-mounted. Hermes state lives in a named Docker volume — it survives rebuilds and restarts.

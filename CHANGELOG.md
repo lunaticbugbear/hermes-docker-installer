@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.2.0] - Unreleased
+## [1.2.0] - 2026-05-28
 
 - Renamed project from Omnipod to **HADES** (Hermes Agent Docker Environment Script). Install directory is now `~/.hades/`, control command is now `hades`.
 - Modernized release pipeline to use native GitHub CLI (`gh release`) instead of deprecated Node actions.

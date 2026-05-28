@@ -11,4 +11,4 @@ Suggested upload path in GitHub UI:
 3. Find **Social preview**
 4. Upload `assets/social-preview.png`
 
-The matching SVG source is included as `social-preview.svg` for future edits.
+The matching SVG source is `social-preview.svg` for future edits.
