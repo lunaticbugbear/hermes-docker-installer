@@ -1,14 +1,10 @@
 # Contributing
 
-Thanks for improving Omnipod.
+Omnipod's job is to be boring and reliable. A non-technical user should be able to install Hermes Agent on Linux, macOS, Windows, or WSL without reading a manual. Changes should preserve that.
 
-This repository aims to feel boringly reliable: install should be predictable, rollback-friendly, and easy to debug across Linux, macOS, Windows, and WSL.
+## Before submitting
 
-## Quality bar
-
-Changes to this installer should preserve the goal: a non-technical user can install Hermes Agent on Linux, macOS, Windows, or WSL with minimal instructions.
-
-Before submitting a change:
+Run these locally:
 
 ```bash
 bash -n install.sh uninstall.sh
@@ -18,7 +14,7 @@ cd /tmp/omnipod-ci && docker compose config
 bash -n bootstrap.sh healthcheck.sh bin/omnipod
 ```
 
-On Windows:
+Windows:
 
 ```powershell
 $errors = $null
@@ -31,17 +27,16 @@ if ($errors) { $errors | Format-List; exit 1 }
 
 ## Principles
 
-- Keep interactive UX clear and forgiving.
-- Keep non-interactive install stable for automation.
-- Never commit `.env` or generated runtime files.
-- Do not make destructive uninstall the default.
-- Prefer explicit helper commands over hidden magic.
-- Add troubleshooting docs for every common failure mode discovered.
+- Keep the interactive flow simple and forgiving.
+- Keep non-interactive install stable — don't break scripted use.
+- Don't commit `.env` or generated runtime files.
+- Uninstall must be conservative by default. Destructive behavior requires explicit flags.
+- Error messages should tell the user what to do, not just what went wrong.
 
 ## Review checklist
 
-- Is the change cross-platform or intentionally scoped?
-- Does it preserve current flags and defaults unless explicitly changed?
-- Does uninstall remain conservative by default?
-- Are docs, examples, and CI checks updated together?
-- Is the error output actionable for a user who is not deeply technical?
+- Is this cross-platform or intentionally scoped to one platform?
+- Does it preserve existing flags and defaults?
+- Does uninstall stay conservative?
+- Are README, docs, and CI updated to match?
+- Would a non-expert understand the error output if something goes wrong?

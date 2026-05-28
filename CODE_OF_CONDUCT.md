@@ -1,27 +1,19 @@
 # Code of Conduct
 
-## Our standard
+Keep it practical and respectful.
 
-We want Omnipod to be welcoming, practical, and respectful.
+**What works:**
 
-Examples of positive behavior:
+- Direct, specific feedback
+- Assuming people are trying to help
+- Documenting tradeoffs honestly
+- Helping debug without talking down to people
 
-- giving constructive feedback
-- assuming good intent
-- documenting trade-offs clearly
-- helping users debug without condescension
+**What doesn't:**
 
-Examples of unacceptable behavior:
+- Personal attacks or harassment
+- Posting someone's private info
+- Misleading users about security or data handling
+- Discriminatory or hostile language
 
-- harassment or personal attacks
-- publishing private information
-- deliberately misleading users about security or data safety
-- hostile, discriminatory, or abusive language
-
-## Enforcement
-
-Project maintainers may remove, edit, or reject contributions, issues, or comments that violate this standard.
-
-## Scope
-
-This applies in issues, pull requests, discussions, and other project spaces.
+Maintainers can remove or reject contributions, issues, or comments that cross these lines. This applies to issues, PRs, discussions, and anywhere else the project lives.

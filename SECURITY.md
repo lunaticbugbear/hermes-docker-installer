@@ -2,39 +2,41 @@
 
 ## Supported versions
 
-The `main` branch is the supported release channel until tagged releases are published.
+`main` is the active branch. Tagged releases are stable snapshots.
 
 ## Reporting a vulnerability
 
-Do not open a public issue for secrets exposure, remote execution bugs, container breakout concerns, or credential leakage.
+Don't open a public issue for security bugs. That includes:
 
-Report privately to the repository owner/security contact.
+- secrets or credentials exposure
+- remote code execution paths
+- container breakout scenarios
+- credential leakage through logs or env vars
 
-Include:
+Contact the repository owner directly and privately.
 
-- operating system
-- Docker version
-- installer version / commit
-- exact command used
+When reporting, include:
+
+- OS and Docker version
+- installer version or commit
+- the exact command you ran
 - logs with secrets removed
-- expected vs actual impact
+- what you expected vs what happened
 
 ## Security model
 
-The installer:
+- Hermes Agent runs inside Docker, isolated from the host
+- Provider keys live in `.env`, chmod 600 on Unix
+- The API server binds to `127.0.0.1` by default — not exposed to the network
+- A random bearer token (`API_SERVER_KEY`) is generated at install time
+- The workspace directory is bind-mounted into the container; treat it like any other shared folder
 
-- runs Hermes Agent inside Docker
-- stores provider keys in `.env`
-- exposes Hermes API Server on `127.0.0.1` by default
-- uses a generated `API_SERVER_KEY`
-- mounts a user workspace into `/workspace`
+Exposing the API port externally is your call, but do it with intention and protect it appropriately.
 
-Users should not expose the API port publicly unless they understand the risk and protect it with network controls and a strong API key.
+## Hardening notes
 
-## Hardening guidance
-
-- Keep Docker Desktop / Docker Engine updated.
-- Prefer the default loopback bind (`127.0.0.1`) unless remote access is required.
-- Rotate provider keys if they were ever pasted into public logs or shells with shared history.
-- Review mounted project contents before giving Hermes access to sensitive repositories.
-- If publishing a bug report, redact `.env` values, bearer keys, tokens, cookies, and internal hostnames.
+- Keep Docker up to date
+- Don't change the default `127.0.0.1` bind unless you have a specific reason
+- Rotate provider keys if they ended up in shell history, public logs, or anywhere unexpected
+- Check what's in your workspace before pointing Hermes at a sensitive repo
+- When filing a bug report, strip `.env` values, bearer tokens, and internal URLs before posting

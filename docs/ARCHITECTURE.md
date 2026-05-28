@@ -1,99 +1,85 @@
 # Omnipod Architecture
 
-## Goal
+## What it is
 
-Omnipod exists to make Hermes Agent installation operationally predictable across Linux, macOS, WSL, and Windows while keeping the host machine clean.
+Omnipod is a packaging and orchestration layer on top of upstream Hermes Agent. It's not a fork.
 
-## High-level model
+It handles:
 
-Omnipod is not a fork of Hermes Agent.
-It is a runtime packaging and orchestration layer around upstream Hermes Agent.
-
-Core responsibilities:
-
-1. detect the host environment
-2. gather provider / model / port / credential inputs
-3. generate a reproducible Docker-based runtime layout
-4. start and manage the Hermes container stack
-5. preserve persistent Hermes state across rebuilds and restarts
+1. detecting the host environment
+2. collecting provider, model, port, and credential inputs
+3. generating a Docker-based runtime layout
+4. starting and managing the container stack
+5. keeping Hermes state alive across rebuilds
 
 ## Runtime layout
 
-### Host-managed files
+### Host side (install directory, default `~/.omnipod/`)
 
-These are generated into the install directory (default `~/.omnipod/` for non-root installs):
-
-- `.env` — provider keys, model, API port, install flags
-- `Dockerfile` — multi-stage runtime image build
-- `docker-compose.yml` — container, volume, port, and workspace wiring
-- `bootstrap.sh` — idempotent first-run config seeding inside container
+- `.env` — provider keys, model, API port, build flags
+- `Dockerfile` — multi-stage build (builder + slim runtime)
+- `docker-compose.yml` — volume, port, and workspace wiring
+- `bootstrap.sh` — idempotent first-run setup inside the container
 - `healthcheck.sh` — API health probe
-- `bin/omnipod` / `bin/omnipod.ps1` / `bin/omnipod.cmd` — operator wrappers
-- `workspace/` — bind-mounted host working directory
+- `bin/omnipod`, `bin/omnipod.ps1`, `bin/omnipod.cmd` — operator control scripts
+- `workspace/` — bind-mounted to `/workspace` inside the container
 
-### Container-managed state
+### Container side
 
-Persistent Hermes state lives in a Docker named volume mounted at `/root/.hermes`.
-This keeps sessions, memories, skills, and config durable across container rebuilds.
+Persistent Hermes state lives in a Docker named volume mounted at `/root/.hermes`. Sessions, memories, skills, and config survive container rebuilds and restarts.
 
 ## Lifecycle
 
-### Install time
+### Install
 
-1. preflight checks validate shell / platform assumptions
-2. Docker and Compose availability are confirmed or bootstrapped where supported
-3. interactive or non-interactive inputs are resolved
-4. runtime files are generated into the install directory
-5. Docker image is built unless `--skip-build` / `-SkipBuild` is used
-6. stack is started unless `--no-start` / `-NoStart` is used
+1. Preflight: validate shell and platform assumptions
+2. Dependency check: confirm Docker and Compose are available, install them if missing and supported
+3. Input resolution: interactive or non-interactive
+4. File generation: write runtime files into the install directory
+5. Image build: skipped if `--skip-build` / `-SkipBuild` is set
+6. Stack start: skipped if `--no-start` / `-NoStart` is set
 
-### Runtime
+### Container startup
 
-The container entrypoint runs `bootstrap.sh`, which:
+`bootstrap.sh` runs as the container entrypoint:
 
-- ensures required directories exist
-- seeds `.env` and `config.yaml` only when missing
-- preserves existing state rather than overwriting it
-- delegates final process execution to Hermes (`hermes gateway run`)
+- creates required directories if missing
+- seeds `.env` and `config.yaml` only when they don't exist yet
+- never overwrites existing config
+- hands off to `hermes gateway run`
 
-## Security boundaries
+## Security defaults
 
-Omnipod deliberately applies conservative defaults:
-
-- API binds to `127.0.0.1` by default
-- `.env` permissions are restricted on Unix-like systems
+- API binds to `127.0.0.1`
+- `.env` is chmod 600 on Unix
 - browser automation is opt-in
 - uninstall is non-destructive by default
-- generated config is preserved unless force-overwrite is requested
+- generated files are preserved unless `--force` is passed
 
-## Cross-platform notes
+## Platform notes
 
-### Linux / macOS / WSL
+**Linux / macOS / WSL:**
+- installer is `install.sh`
+- PATH registration targets `bash`, `zsh`, `fish`
+- root installs use `/usr/local/lib/omnipod` + `/usr/local/bin/omnipod`
 
-- shell installer is `install.sh`
-- PATH integration targets common login shells (`bash`, `zsh`, `fish`)
-- root installs prefer `/usr/local/lib/omnipod` with `/usr/local/bin/omnipod`
-
-### Windows
-
-- PowerShell installer is `install.ps1`
-- helper wrappers include `.ps1` and `.cmd`
-- PATH is registered at User or Machine scope depending on elevation
-- Docker Desktop is the expected runtime backend
+**Windows:**
+- installer is `install.ps1`
+- helper scripts include `.ps1` and `.cmd`
+- PATH registered at User or Machine scope based on elevation
+- Docker Desktop required
 
 ## Design principles
 
-- stable defaults over clever behavior
-- explicit operator commands over hidden state
-- reproducible generated files
-- conservative teardown behavior
-- actionable error output for non-expert users
+- Stable defaults over clever behavior
+- Explicit operator commands over hidden state
+- Reproducible file generation
+- Conservative uninstall
+- Error output that tells the user what to do next
 
 ## Non-goals
 
-Omnipod does not try to:
-
-- replace Hermes Agent upstream release management
-- manage provider billing or quota issues
-- expose the Hermes API publicly by default
-- be a general-purpose container platform
+- Managing Hermes upstream releases
+- Handling provider billing or quota
+- Exposing the API publicly by default
+- Being a general-purpose container platform

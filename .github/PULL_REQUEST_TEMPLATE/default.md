@@ -4,16 +4,16 @@
 
 ## Checklist
 
-- [ ] I validated shell syntax: `bash -n install.sh uninstall.sh`
-- [ ] I ran `shellcheck -x install.sh uninstall.sh`
-- [ ] I verified generated files still work (`--skip-build` or `-SkipBuild` path)
-- [ ] I updated docs if UX, flags, or defaults changed
-- [ ] I removed secrets from logs and examples
+- [ ] `bash -n install.sh uninstall.sh` passes
+- [ ] `shellcheck -x install.sh uninstall.sh` passes
+- [ ] Generated files still work (`--skip-build` or `-SkipBuild` path)
+- [ ] README and docs updated if UX, flags, or defaults changed
+- [ ] Secrets removed from logs and examples
 
 ## Testing
 
-<!-- Paste exact commands / notes -->
+<!-- Exact commands you ran. -->
 
-## Screenshots / terminal output
+## Output / screenshots
 
-<!-- Optional -->
+<!-- Optional. -->

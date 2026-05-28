@@ -1,15 +1,13 @@
 # Release Process
 
-## Release model
+## Channels
 
-Omnipod uses two channels:
-
-- `main` — continuously validated primary branch
-- `v*` tags — immutable release points published via GitHub Releases
+- `main` — continuously validated, always deployable
+- `v*` tags — immutable release snapshots published to GitHub Releases
 
 ## Before tagging
 
-Validate locally where possible:
+Validate locally:
 
 ```bash
 bash -n install.sh uninstall.sh
@@ -22,20 +20,18 @@ print('workflow-yaml-ok')
 PY
 ```
 
-Then ensure the latest `main` CI is green.
+Make sure `main` CI is green.
 
-## Tagging a release
-
-Example:
+## Tagging
 
 ```bash
-git tag v1.1.6
-git push origin v1.1.6
+git tag v1.1.7
+git push origin v1.1.7
 ```
 
-## What the release workflow publishes
+The release workflow picks it up automatically and publishes assets to GitHub Releases.
 
-The `release.yml` workflow packages:
+## What gets published
 
 - `install.sh`
 - `install.ps1`
@@ -48,27 +44,26 @@ The `release.yml` workflow packages:
 - `SUPPORT.md`
 - `SHA256SUMS`
 
-## Verifying release assets
+## Verifying a release
 
 ```bash
 sha256sum -c SHA256SUMS
 ```
 
-## Changelog discipline
+## Changelog
 
-Every user-visible change should update `CHANGELOG.md`, especially:
+Every user-visible change goes in `CHANGELOG.md` before tagging. That includes:
 
-- install flags or defaults
-- generated file behavior
-- CI / governance changes
+- flag or default changes
+- generated file behavior changes
+- CI or governance changes
 - security posture changes
 - release tooling changes
 
 ## Release checklist
 
-- [ ] `main` is green
-- [ ] docs reflect current flags, defaults, and helper commands
-- [ ] generated paths and names are consistent (`omnipod`, `~/.omnipod`)
-- [ ] `CHANGELOG.md` has an entry for the release
-- [ ] tag follows `v*` format
+- [ ] `main` CI is green
+- [ ] README reflects current flags, defaults, and commands
+- [ ] `CHANGELOG.md` has an entry
+- [ ] tag format is `v*`
 - [ ] published assets include `SHA256SUMS`

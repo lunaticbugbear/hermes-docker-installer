@@ -1,17 +1,17 @@
 ---
 name: Feature request
-about: Propose an improvement to installer UX, docs, or automation
+about: Suggest an improvement to the installer, CLI, or docs
 labels: enhancement
 ---
 
 ## Problem
 
-<!-- What pain point exists today? -->
+<!-- What's frustrating or missing today? -->
 
-## Proposed solution
+## What you'd want instead
 
-<!-- What should change? -->
+<!-- Concrete change or behavior. -->
 
-## Alternatives considered
+## Alternatives you considered
 
-## Additional context
+## Anything else

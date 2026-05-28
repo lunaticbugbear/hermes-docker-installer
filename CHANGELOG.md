@@ -1,66 +1,70 @@
 # Changelog
 
 ## Unreleased
-- Switched release publishing from a Node-based GitHub Action to `gh release` CLI calls to avoid runtime deprecation warnings and make reruns idempotent.
-- Added repository social preview assets under `assets/` for manual upload in GitHub settings.
+
+- Switched release publishing from softprops/action-gh-release to native `gh release` calls to avoid Node deprecation warnings and make reruns cleaner.
+- Added social preview assets under `assets/` — upload manually at repo Settings > General > Social preview.
 
 ## 1.1.6 (2026-05-28)
-- Added maintainer-facing architecture and release-process documentation under `docs/`.
-- Added a maintainer operations runbook covering validation, triage, rollback, and runtime recovery.
-- Wired CI and README to enforce and reference maintainer docs.
-- Tightened repository governance with stronger branch protection, metadata, and label policy.
+
+- Added maintainer docs under `docs/`: architecture overview, operations runbook, release process.
+- CI now checks that required docs files exist.
+- Tightened branch protection and label policy.
 
 ## 1.1.5 (2026-05-28)
-- Added release automation with GitHub Releases assets and SHA256 checksums.
-- Added repository hygiene workflow to catch generated artifacts and secret-like strings.
+
+- Release workflow now publishes installer scripts and `SHA256SUMS` to GitHub Releases.
+- Added repository hygiene workflow to catch generated artifacts and accidental secrets.
 - Added `SUPPORT.md` and `CODE_OF_CONDUCT.md`.
-- Expanded CI checks to enforce repository standards files.
-- Bumped GitHub Actions checkout usage to `actions/checkout@v6`.
-- Documented release verification and support standards in the README.
+- CI checks for required repo standards files.
+- Updated checkout action to v6.
 
 ## 1.1.4 (2026-05-28)
-- Reworked repository scaffolding to a top-tier standard with `.editorconfig`, `CODEOWNERS`, Dependabot, issue templates, and PR template.
-- Upgraded GitHub Actions checkout to `actions/checkout@v5` to remove Node 20 deprecation warnings.
-- Expanded contributing and security guidance.
-- Polished README with stronger product framing, setup flow explanation, troubleshooting, quality gates, and repository standards.
-- Tightened `.gitignore` for generated Omnipod helper files.
+
+- Added `.editorconfig`, `CODEOWNERS`, Dependabot config, issue templates, and PR template.
+- Updated checkout action to v5.
+- Expanded CONTRIBUTING and SECURITY docs.
+- README rewrite.
+- Tightened `.gitignore` to exclude generated omnipod runtime files.
 
 ## 1.1.3 (2026-05-28)
-- Upgraded installer robustness to NousResearch-grade standards.
-- Added environment isolation guards (`PYTHONPATH`, `PYTHONHOME`) to prevent builder shadowing.
-- Switched interactive prompts to use raw TTY descriptor probes (`/dev/tty`), supporting piping via `curl | bash` safely.
-- Added FHS install layout directory logic for `root` installations (`/usr/local/lib/omnipod` + `/usr/local/bin`).
-- Integrated automatic login shell detection (`bash`, `zsh`, `fish`) and PATH registration for bin helpers.
-- Added path registration and `omnipod.cmd` wrapper script support for Windows environments.
-- Implemented temporary log capture for Docker builds to report failures cleanly instead of silent aborts.
+
+- Added `PYTHONPATH` / `PYTHONHOME` isolation guards to prevent host Python environment leaking into the build.
+- Switched interactive prompts to read from `/dev/tty` so `curl | bash` works correctly without stdin issues.
+- Root installs now use `/usr/local/lib/omnipod` with a symlink at `/usr/local/bin/omnipod`.
+- PATH registration for `bash`, `zsh`, and `fish` login shells.
+- Windows PATH registration and `omnipod.cmd` wrapper.
+- Docker build failures now surface the actual error instead of exiting silently.
 
 ## 1.1.2 (2026-05-27)
-- Fixed installer `--uninstall` / `-Uninstall` so it never bootstraps Docker before uninstall checks.
-- Bound generated API port to `127.0.0.1` by default.
-- Removed fixed Compose `container_name` to avoid multi-install conflicts.
-- Kept generated Dockerfile browser layer default opt-in/off.
-- Added uninstaller CLI flags: `--dir`, `--remove-data`, `--remove-files`.
-- Hardened CI guard for uninstall mode.
-- Made `--skip-build` / `-SkipBuild` skip port collision checks because no service starts.
+
+- Fixed `--uninstall` / `-Uninstall` running Docker checks before confirming uninstall intent.
+- API port now binds to `127.0.0.1` by default.
+- Removed hardcoded `container_name` from Compose to avoid conflicts with multiple installs.
+- Browser layer in Dockerfile stays opt-out by default.
+- Uninstaller now accepts `--dir`, `--remove-data`, `--remove-files` flags.
+- CI guard for uninstall path.
+- `--skip-build` / `-SkipBuild` now skips port collision check since nothing starts.
 
 ## 1.1.1 (2026-05-27)
-- Added auto-install/auto-start Docker support for Windows and Linux/macOS.
-- Installer detects OS and uses appropriate method (get.docker.com, brew, winget).
-- Added logic for starting Docker daemon if it's found but idle.
-- CI: Added smoke test and browser opt-in verification.
+
+- Installer auto-detects and installs Docker if missing (get.docker.com on Linux, brew on macOS, winget on Windows).
+- Starts the Docker daemon automatically if installed but not running.
+- CI: added smoke test and browser opt-in check.
 
 ## 1.1.0 (2026-05-27)
-- Multi-stage Dockerfile (builder + runtime).
-- Browser (Playwright/Chromium) moved to `--browser` opt-in flag.
-- Added pinning of Hermes Agent version via `HERMES_VERSION` env/flag.
-- Full parity between `install.sh` and `install.ps1`.
-- Added robust cleanup scripts (`uninstall.sh`, `uninstall.ps1`).
-- API server config improvements and key passing logic.
-- CI validation for shell, powershell, compose files, and generated helper scripts.
+
+- Multi-stage Dockerfile (builder + slim runtime).
+- Browser support (Playwright/Chromium) moved behind `--browser` flag.
+- `HERMES_VERSION` flag for pinning a specific Hermes branch or tag.
+- `install.sh` and `install.ps1` now fully in sync.
+- Added `uninstall.sh` and `uninstall.ps1`.
+- CI covers shell, PowerShell, Compose, and generated helper scripts.
 
 ## 1.0.0 (2026-05-27)
+
 - Initial release.
-- Docker-based installer for Linux/macOS/WSL/PowerShell.
-- Basic provider/model wizard.
-- API server port collision detection.
-- Helper script generation for CLI, logs, and updates.
+- Docker-based installer for Linux, macOS, WSL, and Windows.
+- Interactive provider/model/key wizard.
+- Port collision detection.
+- Helper script generation.

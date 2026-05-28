@@ -1,12 +1,12 @@
 ---
 name: Bug report
-about: Report an install, runtime, or documentation bug
+about: Something broke during install or at runtime
 labels: bug
 ---
 
 ## Summary
 
-<!-- Short description of the problem -->
+<!-- What went wrong? One or two sentences. -->
 
 ## Environment
 
@@ -14,26 +14,26 @@ labels: bug
 - Shell / terminal:
 - Docker version:
 - Install method: `install.sh` / `install.ps1`
-- Omnipod commit/version:
+- Omnipod version or commit:
 
 ## Command used
 
 ```text
-paste the exact command here
+paste here
 ```
 
 ## Expected behavior
 
-## Actual behavior
+## What actually happened
 
-## Logs / output
+## Logs
 
-> Remove secrets before posting.
+> Remove secrets and keys before posting.
 
 ```text
-paste logs here
+paste here
 ```
 
-## Reproduction notes
+## Steps to reproduce
 
-<!-- Minimal steps to reproduce -->
+<!-- Minimal reproduction if you can. -->

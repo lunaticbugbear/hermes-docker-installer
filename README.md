@@ -8,12 +8,12 @@
  \___/|_|  |_|_|\__|  __/___/|___/|___/ 
                    |_|                  
   </pre>
-  <strong>Zero-Dependency Hermes Agent Docker Environment.</strong><br>
-  Isolated workspace. Persistent configuration. Local API gateway. Works on Linux, macOS, WSL, and Windows.
+  <strong>Run Hermes Agent in Docker. No mess on your machine.</strong><br>
+  Works on Linux, macOS, WSL, and Windows.
 </p>
 
 <p align="center">
-  <a href="https://github.com/lunaticbugbear/hermes-docker-installer/actions/workflows/ci.yml"><img alt="CI Status" src="https://github.com/lunaticbugbear/hermes-docker-installer/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/lunaticbugbear/hermes-docker-installer/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/lunaticbugbear/hermes-docker-installer/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
   <img alt="Docker" src="https://img.shields.io/badge/runtime-Docker-2496ED">
   <img alt="Platforms" src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20WSL-blueviolet">
@@ -21,14 +21,18 @@
 
 ---
 
-## Architecture & Data Flow
+Omnipod installs [Hermes Agent](https://hermes-agent.nousresearch.com) inside a Docker container with persistent state, a local API gateway, and a single control command. Your host stays clean. Sessions, memories, and config survive rebuilds.
+
+---
+
+## How it works
 
 ```text
                +-------------------------------------------------+
                |                   HOST SYSTEM                   |
                |                                                 |
                |  ~/.omnipod/                                    |
-               |  ├── .env  (API Keys, Port, Config)             |
+               |  ├── .env  (keys, port, config)                 |
                |  ├── docker-compose.yml                         |
                |  │                                              |
                |  ├── workspace/  <======= Bind Mount ========>  |
@@ -42,83 +46,50 @@
 |                 v                                           v  |
 |     [ Container: omnipod ]                          /workspace |
 |                                                                |
-|     - Runs: hermes gateway run                                 |
-|     - API Server: 127.0.0.1:8642 (Host Port)                   |
+|     hermes gateway run                                         |
+|     API: 127.0.0.1:8642                                        |
 |                                                                |
-|     /root/.hermes  <========== Named Volume ==========>        |
+|     /root/.hermes  <========== Named Volume ===========>       |
 |                                                     |          |
 +-----------------------------------------------------|----------+
                                                       v
                                             [ Volume: hermes_home ]
                                             - config.yaml & .env
-                                            - sessions/ (transcripts)
+                                            - sessions/
                                             - memory/ & skills/
 ```
 
----
-
-## Key Features
-
-- 📦 **Isolated Workspace**: Keeps your host machine clean. No Python versions, node packages, or Playwright/Chromium installs clashing with your environment.
-- ⚡ **Instant Path Registration**: Registers the `omnipod` command automatically to your shell PATH (`zsh`, `bash`, `fish`) on Linux/macOS, and registers User/Machine environment variables on Windows with `omnipod.cmd`.
-- 🔐 **Hardened Security**: The API server binds strictly to `127.0.0.1` by default to prevent exposure. Config files (`.env`) are locked down to `chmod 600`.
-- 🔄 **Idempotent Setup**: Container boot script (`bootstrap.sh`) checks for existing configuration files, preventing accidental data overrides.
-- 🛠️ **Seamless Command Wrapper**: Control container lifecycles (`start`, `stop`, `restart`, `cli`, `logs`, `shell`) through a simple CLI command.
+The container runs Hermes. The volume keeps your data. The workspace folder is shared between host and container so Hermes can read your project files directly.
 
 ---
 
-## Why Omnipod exists
-
-Hermes Agent is powerful, but local setup can sprawl quickly: Python toolchains, browser dependencies, shell PATH quirks, Docker availability, and provider credential handling.
-
-Omnipod compresses that into one predictable path:
-
-- keep the host machine clean
-- generate a reproducible runtime layout
-- preserve persistent Hermes state across rebuilds and restarts
-- default to safer networking behavior
-- give operators one control surface: `omnipod`
-
----
-
-## Quick Start
+## Quick start
 
 ### Linux / macOS / WSL
 
-Execute the installer directly via script pipe:
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/lunaticbugbear/hermes-docker-installer/main/install.sh)
 ```
 
 ### Windows (PowerShell)
 
-Execute in an elevated or standard PowerShell window:
 ```powershell
 powershell -ExecutionPolicy Bypass -c "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/lunaticbugbear/hermes-docker-installer/main/install.ps1' -OutFile install.ps1; .\install.ps1"
 ```
 
-*The installer checks dependencies, detects your platform, asks for your provider, API key, and model, and registers the global `omnipod` helper command.*
-
-### Interactive setup flow
-
-During interactive setup, Omnipod asks in this order:
-
-1. which provider / model family you want to use
-2. the API key for that provider
-3. the exact model name (with a smart default)
-4. the local API port
+The installer asks for your provider, API key, model, and port. That's it.
 
 ---
 
-## Non-Interactive Automation
+## Non-interactive install
 
-Perfect for servers, scripts, CI/CD, or automated virtual machines.
+For servers, CI, or scripts where you can't answer prompts:
 
-### Unix Shell
+### Unix
 
 ```bash
 HERMES_NONINTERACTIVE=1 \
-OPENROUTER_API_KEY=<OPENROUTER_API_KEY> \
+OPENROUTER_API_KEY=<your_key> \
 bash install.sh \
   --provider openrouter \
   --model deepseek/deepseek-v4-flash:free \
@@ -131,222 +102,197 @@ bash install.sh \
 .\install.ps1 `
   -Provider openrouter `
   -Model deepseek/deepseek-v4-flash:free `
-  -OpenRouterApiKey "<OPENROUTER_API_KEY>" `
+  -OpenRouterApiKey "<your_key>" `
   -Port 8642
 ```
 
 ---
 
-## Deployment Layout
+## Commands
 
-By default, Omnipod deploys to:
-- **Non-root user**: `~/.omnipod/`
-- **Root user**: `/usr/local/lib/omnipod/` (with binary linked to `/usr/local/bin/omnipod`)
+Once installed, `omnipod` works from anywhere:
 
-### File Tree
-
-```text
-~/.omnipod/
-├── .env                 # API settings, Port variables
-├── Dockerfile           # Multi-stage container instruction
-├── docker-compose.yml   # Volume mapping and networking definitions
-├── bootstrap.sh         # Idempotent runtime setup config helper
-├── healthcheck.sh       # Container health monitoring tool
-├── bin/
-│   ├── omnipod          # Unix control helper
-│   ├── omnipod.ps1      # PowerShell control script
-│   └── omnipod.cmd      # Windows command CMD wrapper
-└── workspace/           # Persistent folder shared with the container
-```
+| Command | What it does |
+|---|---|
+| `omnipod start` | Start the container in the background |
+| `omnipod stop` | Stop it |
+| `omnipod restart` | Restart (picks up `.env` changes) |
+| `omnipod status` | Show container state and ports |
+| `omnipod cli` | Open an interactive chat session inside the container |
+| `omnipod logs` | Tail the Hermes Agent logs |
+| `omnipod shell` | Drop into a bash shell inside the container |
+| `omnipod update` | Pull latest changes, rebuild, restart |
+| `omnipod url` | Print the API server URL |
+| `omnipod key` | Print the bearer auth token |
+| `omnipod down` | Stop container and remove networks |
+| `omnipod reset` | Wipe containers, networks, and persistent volumes |
 
 ---
 
-## Command Reference
+## Install options
 
-Once installed, you can control Omnipod from **any directory** on your host machine:
+### `install.sh` flags
 
-| Command | Action | Description |
-|---|---|---|
-| `omnipod start` | Up Stack | Spin up the gateway/API server in the background |
-| `omnipod stop` | Stop Stack | Pause container execution |
-| `omnipod restart` | Restart Stack | Reload configurations and restart the gateway |
-| `omnipod status` | Show Status | View running containers and ports |
-| `omnipod cli` | Chat CLI | Open interactive chat console directly inside the container |
-| `omnipod logs` | View Logs | Follow tail output logs of the Hermes Agent |
-| `omnipod shell` | Shell Exec | Open a bash terminal inside the running container |
-| `omnipod update` | Upgrade Stack | Pull the latest changes, rebuild, and update |
-| `omnipod url` | Get Host URL | Output the current API Server listening URL |
-| `omnipod key` | Get API Key | Output the generated bearer API authorization token |
-| `omnipod down` | Shutdown Stack| Stop stack and remove container networks |
-| `omnipod reset` | Hard Reset | Wipe containers, networks, and persistent data volumes |
-
----
-
-## Command Configuration Options
-
-### Linux/macOS CLI options (`install.sh`)
-
-| Option | Default | Description |
+| Flag | Default | Notes |
 |---|---:|---|
-| `--dir PATH` | `~/.omnipod` | Target directory for the deployment |
-| `--provider NAME` | `openrouter` | AI provider (`openrouter`, `anthropic`, `openai`, `google`, `deepseek`, or `custom`) |
-| `--model MODEL` | `deepseek/deepseek-v4-flash:free` | Model target name |
-| `--port PORT` | `8642` | Port to bind for the API server |
-| `--name NAME` | `omnipod` | Compose stack project name |
-| `--browser` | off | Opt-in to install Playwright + Chromium browser environment |
-| `--no-start` | off | Build image and files but do not launch stack |
-| `--skip-build` | off | Generate config files only; do not start Docker services |
-| `--force` | off | Overwrite generated runtime files (keeps `.env` backed up to `.env.bak`) |
-| `--uninstall` | off | Bring down stack and run uninstaller routine |
+| `--dir PATH` | `~/.omnipod` | Where to install |
+| `--provider NAME` | `openrouter` | `openrouter`, `anthropic`, `openai`, `google`, `deepseek`, `custom` |
+| `--model MODEL` | `deepseek/deepseek-v4-flash:free` | Model string |
+| `--port PORT` | `8642` | API bind port |
+| `--name NAME` | `omnipod` | Compose project name |
+| `--browser` | off | Include Playwright + Chromium (~450 MB extra) |
+| `--no-start` | off | Build image and files, don't start |
+| `--skip-build` | off | Generate config files only |
+| `--force` | off | Overwrite generated files (backs up `.env` → `.env.bak`) |
+| `--uninstall` | off | Run the uninstaller |
 
-### Windows PowerShell options (`install.ps1`)
+### `install.ps1` parameters
 
-| Parameter | Default | Description |
+| Parameter | Default | Notes |
 |---|---:|---|
-| `-InstallDir PATH` | `$env:USERPROFILE\.omnipod` | Target directory (switches to `%ProgramFiles%\omnipod` for Admin) |
-| `-Provider NAME` | `openrouter` | Chosen AI provider |
-| `-Model MODEL` | `deepseek/deepseek-v4-flash:free` | Chosen AI model name |
-| `-Port PORT` | `8642` | Port to bind |
-| `-ProjectName NAME` | `omnipod` | Compose stack project name |
-| `-Browser` | off | Include Playwright browser stack |
-| `-NoStart` | off | Build files and image but do not start container |
-| `-SkipBuild` | off | Generate config files only |
-| `-Force` | off | Overwrite files (automatically backs up `.env`) |
-| `-Uninstall` | off | Run PowerShell uninstall procedure |
+| `-InstallDir PATH` | `$env:USERPROFILE\.omnipod` | Switches to `%ProgramFiles%\omnipod` when run as Admin |
+| `-Provider NAME` | `openrouter` | Provider name |
+| `-Model MODEL` | `deepseek/deepseek-v4-flash:free` | Model string |
+| `-Port PORT` | `8642` | API bind port |
+| `-ProjectName NAME` | `omnipod` | Compose project name |
+| `-Browser` | off | Include Playwright stack |
+| `-NoStart` | off | Don't start after build |
+| `-SkipBuild` | off | Config files only |
+| `-Force` | off | Overwrite files |
+| `-Uninstall` | off | Run uninstall |
 
 ---
 
-## Environment & Secrets
+## Provider credentials
 
-### Provider Credentials
+Pass the API key for whichever provider you pick:
 
-Provide the environment variable for your target model provider:
-
-| Provider | Environment Variable |
+| Provider | Variable |
 |---|---|
 | OpenRouter | `OPENROUTER_API_KEY` |
 | Anthropic | `ANTHROPIC_API_KEY` |
 | OpenAI | `OPENAI_API_KEY` |
-| Google Gemini | `GOOGLE_API_KEY` or `GEMINI_API_KEY` |
+| Google | `GOOGLE_API_KEY` or `GEMINI_API_KEY` |
 | DeepSeek | `DEEPSEEK_API_KEY` |
-| Custom Endpoint | `CUSTOM_API_KEY` + `CUSTOM_BASE_URL` |
+| Custom | `CUSTOM_API_KEY` + `CUSTOM_BASE_URL` |
 
-### System Modifiers
+Other env vars:
 
-| Variable | Default | Purpose |
+| Variable | Default | Notes |
 |---|---:|---|
-| `API_SERVER_KEY` | (Random Hex) | Define a static bearer key for API authentication |
-| `HERMES_VERSION` | `main` | Pin a specific Hermes Agent branch, tag, or commit hash |
-| `HERMES_NONINTERACTIVE=1` | `0` | Prevent installer from prompting inputs on headless systems |
+| `API_SERVER_KEY` | random hex | Set this to use a fixed bearer token |
+| `HERMES_VERSION` | `main` | Pin a specific branch, tag, or commit |
+| `HERMES_NONINTERACTIVE` | `0` | Set to `1` to skip all prompts |
 
 ---
 
-## Browser Tooling (Opt-in)
+## What gets installed
 
-The browser environment (Playwright + Chromium) adds around ~450 MB to the build size and increases installation time. If you need browser automation tools:
-
-Unix:
-```bash
-bash install.sh --browser
+```text
+~/.omnipod/
+├── .env
+├── Dockerfile
+├── docker-compose.yml
+├── bootstrap.sh
+├── healthcheck.sh
+├── bin/
+│   ├── omnipod
+│   ├── omnipod.ps1
+│   └── omnipod.cmd
+└── workspace/
 ```
 
-PowerShell:
-```powershell
+Root installs go to `/usr/local/lib/omnipod/` with the binary linked at `/usr/local/bin/omnipod`.
+
+---
+
+## Browser tooling
+
+Off by default. Adds Playwright + Chromium, around 450 MB extra.
+
+```bash
+# Unix
+bash install.sh --browser
+
+# PowerShell
 .\install.ps1 -Browser
 ```
 
 ---
 
-## Pinning Versions
-
-Omnipod allows pinning specific builds of Hermes Agent to ensure environment stability:
+## Pinning a version
 
 ```bash
 HERMES_VERSION=v0.5.0 bash install.sh
 ```
 
-To update an existing pin back to main:
+To go back to main:
+
 ```bash
 HERMES_VERSION=main bash install.sh --force
 ```
 
 ---
 
-## Customizing Configurations
+## Changing config after install
 
-If you need to change your keys or model post-installation:
-1. Open `~/.omnipod/.env` (or your chosen directory).
-2. Edit parameters (`MODEL_NAME`, `OPENROUTER_API_KEY`, etc.).
-3. Restart using the omnipod wrapper:
-   ```bash
-   omnipod restart
-   ```
+Edit `~/.omnipod/.env` directly, then:
+
+```bash
+omnipod restart
+```
+
+If you changed build-time options (browser support, Hermes version):
+
+```bash
+omnipod update
+```
 
 ---
 
-## Graceful Uninstallation
-
-Clean up containers, files, and networks securely.
-
-### Shell Uninstaller
+## Uninstalling
 
 ```bash
+# Unix
 bash uninstall.sh
-bash uninstall.sh --remove-data     # Stops stack and removes named volumes
-bash uninstall.sh --remove-files    # Stops stack and deletes installation directory
-bash uninstall.sh --remove-files --remove-data # Complete system clean
-```
+bash uninstall.sh --remove-data     # also removes named volumes
+bash uninstall.sh --remove-files    # also deletes the install directory
+bash uninstall.sh --remove-files --remove-data
 
-### PowerShell Uninstaller
-
-```powershell
+# PowerShell
 .\uninstall.ps1
 .\uninstall.ps1 -RemoveData
 .\uninstall.ps1 -RemoveFiles
 .\uninstall.ps1 -RemoveFiles -RemoveData
 ```
 
-Defaults are conservative:
-
-- stack shutdown is attempted only when Docker is available
-- volumes stay unless data removal is explicitly requested
-- files stay unless file removal is explicitly requested
+By default, uninstall shuts down the stack but leaves volumes and files alone.
 
 ---
 
 ## Troubleshooting
 
-### Docker Daemon Not Reachable
+**Docker not found or not running**
 
-Ensure Docker is running on your machine:
-- **Linux**: `sudo systemctl start docker` (add user to group via `sudo usermod -aG docker $USER`)
-- **macOS**: Launch `Docker.app` from Applications folder.
-- **Windows**: Launch `Docker Desktop` from Start Menu.
+- Linux: `sudo systemctl start docker`, then add your user to the docker group if needed: `sudo usermod -aG docker $USER`
+- macOS: open Docker.app
+- Windows: open Docker Desktop
 
-### Port Conflicts
+**Port 8642 already in use**
 
-If the default port `8642` is bound by another service, the installer will suggest free alternative ports. If running non-interactively, pass a free port:
+The installer suggests a free port in interactive mode. Non-interactive:
+
 ```bash
 bash install.sh --port 18642
 ```
 
-### Rebuild after config changes
+**Config changes not taking effect**
 
-Most `.env` changes only need a restart:
+Most changes only need `omnipod restart`. If you changed `--browser` or `HERMES_VERSION`, run `omnipod update` to rebuild the image.
 
-```bash
-omnipod restart
-```
+**Browser tools missing**
 
-If you changed build-time settings such as browser support or the Hermes version pin:
-
-```bash
-omnipod update
-```
-
-### Browser tools are missing
-
-Browser automation is opt-in. Re-run with browser support enabled:
+Re-run with browser support:
 
 ```bash
 bash install.sh --browser --force
@@ -354,40 +300,32 @@ bash install.sh --browser --force
 
 ---
 
-## Quality gates
+## CI checks
 
-Every push validates:
+Every push runs:
 
-- Bash syntax
-- ShellCheck
-- PowerShell parser correctness
-- generated Compose config validity
+- bash syntax + ShellCheck
+- PowerShell parser validation
+- Compose config check
 - generated helper script syntax
-- uninstall safety behavior
-- docs sanity
-- Docker build + API health smoke test on `main`
-- repository hygiene checks for secrets-like patterns and generated artifacts
+- uninstall behavior verification
+- docs sanity (required files present)
+- Docker build + API health probe on `main`
+- repository hygiene scan
 
 ---
 
-## Repository standards
+## Docs
 
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution and validation expectations
-- [`SECURITY.md`](SECURITY.md) — reporting guidance and hardening notes
-- [`SUPPORT.md`](SUPPORT.md) — user support expectations and intake checklist
-- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) — community behavior baseline
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — maintainer-facing system design notes
-- [`docs/OPERATIONS.md`](docs/OPERATIONS.md) — maintainer runbook, triage, and recovery guidance
-- [`docs/RELEASE_PROCESS.md`](docs/RELEASE_PROCESS.md) — tagging and release publication flow
-- [`.editorconfig`](.editorconfig) — formatting baseline across editors
-- [`.github/CODEOWNERS`](.github/CODEOWNERS) — ownership defaults
-- [`.github/dependabot.yml`](.github/dependabot.yml) — dependency update automation
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [SECURITY.md](SECURITY.md)
+- [SUPPORT.md](SUPPORT.md)
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- [docs/OPERATIONS.md](docs/OPERATIONS.md)
+- [docs/RELEASE_PROCESS.md](docs/RELEASE_PROCESS.md)
 
-## Releases
-
-Tagged releases (`v*`) automatically publish installer scripts plus `SHA256SUMS` through GitHub Releases.
-
-Example verification:
+Releases publish installer scripts + `SHA256SUMS` to GitHub Releases on every `v*` tag.
 
 ```bash
 sha256sum -c SHA256SUMS
@@ -397,4 +335,4 @@ sha256sum -c SHA256SUMS
 
 ## License
 
-Omnipod is open-source software licensed under the [MIT License](LICENSE).
+MIT. See [LICENSE](LICENSE).

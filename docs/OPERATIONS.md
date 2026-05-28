@@ -1,47 +1,41 @@
-# Omnipod Operations Guide
+# Operations Guide
 
-## Scope
+For maintainers. Covers validation, triage, recovery, and day-to-day tasks.
 
-This document is for maintainers operating, validating, and troubleshooting the Omnipod installer and its generated Docker runtime.
+See also: [ARCHITECTURE.md](ARCHITECTURE.md), [RELEASE_PROCESS.md](RELEASE_PROCESS.md), [../CONTRIBUTING.md](../CONTRIBUTING.md)
 
-See also:
-
-- [`ARCHITECTURE.md`](ARCHITECTURE.md) for system design and lifecycle
-- [`RELEASE_PROCESS.md`](RELEASE_PROCESS.md) for tagging and release publication
-- [`CONTRIBUTING.md`](../CONTRIBUTING.md) for contributor expectations
+---
 
 ## Repository invariants
 
-These rules should remain true unless a deliberate breaking change is made:
+These should stay true unless there's a deliberate breaking change:
 
-- the installer entrypoints are `install.sh` and `install.ps1`
-- uninstall stays conservative by default
-- browser tooling remains opt-in
-- generated API exposure stays bound to `127.0.0.1` by default
-- generated runtime files are not committed to this repository
-- persistent Hermes state survives rebuilds and restarts
+- installer entrypoints are `install.sh` and `install.ps1`
+- uninstall is conservative by default
+- browser tooling is opt-in
+- API binds to `127.0.0.1` by default
+- generated runtime files are not committed
+- Hermes state survives rebuilds
 
-## Generated runtime contract
+## What the repo contains vs what gets generated
 
-The repository contains installer source, not a checked-in runtime.
-
-Generated at install time:
+The repo is installer source only. Generated at install time:
 
 - `Dockerfile`
 - `docker-compose.yml`
 - `bootstrap.sh`
 - `healthcheck.sh`
-- `bin/omnipod`
-- `bin/omnipod.ps1`
-- `bin/omnipod.cmd`
-- install directory `.env`
-- install directory `workspace/`
+- `bin/omnipod`, `bin/omnipod.ps1`, `bin/omnipod.cmd`
+- `.env`
+- `workspace/`
 
-Persistent Hermes data lives in the Compose volume key `hermes_home` mounted at `/root/.hermes` inside the container.
+Persistent Hermes data lives in the `hermes_home` Docker volume, mounted at `/root/.hermes`.
 
-## Local validation before merge
+---
 
-Run the same core checks CI expects:
+## Local validation
+
+Run before merging:
 
 ```bash
 bash -n install.sh uninstall.sh
@@ -57,7 +51,7 @@ cd /tmp/omnipod-ci && docker compose config
 bash -n bootstrap.sh healthcheck.sh bin/omnipod
 ```
 
-Optional Windows parser check:
+Windows parser check (optional):
 
 ```powershell
 $errors = $null
@@ -68,17 +62,19 @@ $errors = $null
 if ($errors) { $errors | Format-List; exit 1 }
 ```
 
-## Common maintainer tasks
+---
 
-### Regenerate a runtime without building
+## Common tasks
+
+### Regenerate runtime files without building
 
 ```bash
 HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-token-123456789 bash install.sh --skip-build --force --dir /tmp/omnipod-ci
 ```
 
-Use this when validating generated files, flags, paths, or Compose wiring.
+Useful for checking generated Compose config, paths, or flag handling without spinning up Docker.
 
-### Full local smoke test
+### Full smoke test
 
 ```bash
 HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-token-123456789 bash install.sh --force --dir /tmp/omnipod-smoke
@@ -89,7 +85,7 @@ curl -sf http://127.0.0.1:8642/health
 ./bin/omnipod down
 ```
 
-### Inspect a live install
+### Check a live install
 
 ```bash
 omnipod status
@@ -98,7 +94,7 @@ omnipod logs
 omnipod shell
 ```
 
-If the wrapper is unavailable:
+If the wrapper isn't in PATH:
 
 ```bash
 cd ~/.omnipod
@@ -107,75 +103,77 @@ docker compose logs --tail 120 hermes
 curl -sf http://127.0.0.1:8642/health
 ```
 
-## Triage playbook
+---
 
-### Installer failure
+## Triage
+
+### Installer fails
 
 Collect:
 
-- operating system and version
+- OS and version
 - shell or PowerShell version
 - Docker version
-- exact install command
-- whether the run was interactive or non-interactive
+- exact command
+- interactive or non-interactive run
 - sanitized stderr/stdout
 
-Check for:
+Common causes:
 
-- missing Docker daemon
-- PATH registration issues
-- permission problems writing install directory
-- stale generated files during non-forced reruns
+- Docker daemon not running
+- PATH write permission issues
+- stale generated files from a previous install without `--force`
 
-### API health failure
+### API health check fails
 
-1. inspect container state: `omnipod status`
-2. inspect logs: `omnipod logs`
-3. confirm bind address and port in generated `.env`
-4. verify local probe: `curl -sf http://127.0.0.1:8642/health`
-5. if version-related, rebuild with `omnipod update`
+1. `omnipod status` — is the container up?
+2. `omnipod logs` — any errors?
+3. Check `.env` for the right bind address and port
+4. `curl -sf http://127.0.0.1:8642/health`
+5. If version-related: `omnipod update`
 
 ### Suspected regression in generated files
 
-1. regenerate into a clean temp dir with `--skip-build --force`
-2. diff old vs new generated files
-3. confirm README, CI, and changelog reflect the intended behavior
-4. test uninstall flow if install/startup logic changed
+1. Regenerate into a clean temp dir with `--skip-build --force`
+2. Diff the output against the last known good state
+3. Check that README and CI match the intended behavior
+4. If install/startup logic changed, test the uninstall path too
 
-## Change-management rules
+---
 
-When changing flags, defaults, paths, or generated files:
+## Change management
 
-- update `README.md`
-- update `CHANGELOG.md`
-- update CI assertions if behavior moved
-- keep Unix and PowerShell installers aligned
-- preserve non-interactive automation unless intentionally changed
+When you change flags, defaults, paths, or generated file behavior:
 
-## GitHub admin baseline
+- update README
+- update CHANGELOG
+- update CI if behavior assertions moved
+- keep `install.sh` and `install.ps1` in sync
+- don't break non-interactive automation silently
 
-Repository governance should stay aligned with these expectations:
+---
 
-- `main` protected
-- required CI checks configured
+## GitHub baseline
+
+- `main` protected, required CI checks enforced
 - stale reviews dismissed
-- conversation resolution required
-- force-pushes disabled
-- branch deletion disabled
+- conversation resolution required before merge
+- force-push disabled
 - squash merge preferred
-- merge commits and rebase merges disabled unless policy changes deliberately
 
-## Recovery and rollback
+---
 
-If a change breaks installs in the field:
+## Recovery
 
-1. stop merging new changes
-2. identify last known good commit or tag
-3. revert the offending change or pin the prior behavior
-4. rerun local validation and CI
-5. publish a follow-up release if the break affected tagged users
+If a release breaks installs:
 
-If a user's runtime is broken but data should survive:
+1. Stop merging
+2. Find the last good commit or tag
+3. Revert or patch the breaking behavior
+4. Rerun validation and CI
+5. Publish a follow-up tag if users hit it from a tagged release
+
+If a user's runtime is broken but their data should survive:
 
 ```bash
 omnipod down
@@ -183,10 +181,10 @@ omnipod update
 omnipod start
 ```
 
-If the user explicitly accepts destructive recovery:
+If they're OK losing the persistent volume:
 
 ```bash
 omnipod reset
 ```
 
-Use destructive recovery only after warning that Hermes sessions, memory, and config stored in the persistent volume may be removed.
+Warn them first — `reset` removes Hermes sessions, memory, and config from the named volume.
