@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+- Switched release publishing from a Node-based GitHub Action to `gh release` CLI calls to avoid runtime deprecation warnings and make reruns idempotent.
+- Added repository social preview assets under `assets/` for manual upload in GitHub settings.
+
 ## 1.1.6 (2026-05-28)
 - Added maintainer-facing architecture and release-process documentation under `docs/`.
 - Added a maintainer operations runbook covering validation, triage, rollback, and runtime recovery.

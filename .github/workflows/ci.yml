@@ -102,6 +102,10 @@ jobs:
           test -f install.ps1
           test -f uninstall.sh
           test -f uninstall.ps1
+          test -f assets/README.md
+          test -f assets/social-preview.png
+          test -f assets/social-preview.svg
+          test -f assets/generate_social_preview.py
       - name: No stale installer flags in docs/CI
         run: |
           if grep -R -- '--no-browser' README.md CHANGELOG.md install.sh install.ps1; then
