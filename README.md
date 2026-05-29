@@ -1,3 +1,5 @@
+<div align="center">
+
 # HADES
 <strong>Hermes Agent Docker Environment Script</strong><br>
 Isolated workspace. Persistent state. One command. Linux, macOS, WSL, Windows.
@@ -98,6 +100,17 @@ More details:
 
 Edit `~/.hades/.env`, then `hades restart`. If you changed build-time settings (browser support, Hermes version pin): `hades update`.
 
+Key settings:
+
+| Variable | Default | Description |
+|---|---|---|
+| `MODEL_PROVIDER` | `openrouter` | Provider to use |
+| `MODEL_NAME` | `deepseek/deepseek-v4-flash:free` | Model identifier |
+| `HERMES_VERSION` | `v2026.5.29` | Pinned Hermes release tag |
+| `PYTHON_VERSION` | `3.12-slim-bookworm` | Docker base image variant |
+| `GATEWAY_ALLOW_ALL_USERS` | `true` | Allow any API key to act as any user |
+| `API_SERVER_KEY` | *(generated)* | Bearer token for the API server |
+
 ## Uninstalling
 
 ```bash
@@ -155,6 +168,8 @@ Workspace is bind-mounted. Hermes state lives in a named Docker volume — it su
 ## CI
 
 Every push validates: bash syntax, ShellCheck, PowerShell parser, Compose config, generated helper scripts, uninstall safety, docs sanity, repo hygiene. Docker build + API health probe runs on `main`.
+
+A daily workflow checks for new [Hermes Agent](https://github.com/NousResearch/hermes-agent) releases and opens a PR to bump the version pin automatically.
 
 ## Docs
 
