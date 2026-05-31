@@ -12,6 +12,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   release:
@@ -23,6 +25,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0
+
       - name: Prepare release assets
         run: |
           mkdir -p dist
@@ -31,7 +36,8 @@ jobs:
           cp uninstall.sh dist/uninstall.sh
           cp uninstall.ps1 dist/uninstall.ps1
           cp README.md LICENSE CHANGELOG.md SECURITY.md SUPPORT.md dist/
-          (cd dist && sha256sum * > SHA256SUMS)
+          (cd dist && sha256sum install.sh install.ps1 uninstall.sh uninstall.ps1 README.md LICENSE CHANGELOG.md SECURITY.md SUPPORT.md > SHA256SUMS)
+          syft dir:dist -o spdx-json=dist/sbom.spdx.json
 
       - name: Generate release notes body
         run: |
@@ -44,12 +50,26 @@ jobs:
             echo "- uninstall.sh"
             echo "- uninstall.ps1"
             echo "- SHA256SUMS"
+            echo "- sbom.spdx.json"
             echo
             echo "### Verification"
             echo '```bash'
             echo 'sha256sum -c SHA256SUMS'
             echo '```'
+            echo
+            echo 'GitHub artifact provenance attestation is published for the shipped installer asset.'
           } > RELEASE_NOTES.md
+
+      - name: Generate provenance attestation
+        uses: actions/attest@v4
+        with:
+          subject-path: dist/install.sh
+
+      - name: Generate SBOM attestation
+        uses: actions/attest@v4
+        with:
+          subject-path: dist/install.sh
+          sbom-path: dist/sbom.spdx.json
 
       - name: Publish GitHub release
         run: |
@@ -69,6 +89,7 @@ jobs:
             dist/SECURITY.md
             dist/SUPPORT.md
             dist/SHA256SUMS
+            dist/sbom.spdx.json
           )
 
           if gh release view "$TAG" >/dev/null 2>&1; then

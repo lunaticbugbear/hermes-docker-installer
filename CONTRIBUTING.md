@@ -40,3 +40,5 @@ if ($errors) { $errors | Format-List; exit 1 }
 - Does uninstall stay conservative?
 - Are README, docs, and CI updated to match?
 - Would a non-expert understand the error output if something goes wrong?
+- Are trust-facing claims phrased as observed behavior, not guarantees?
+- If release/security/support wording changed, were those docs updated together?

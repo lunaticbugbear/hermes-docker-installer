@@ -6,7 +6,7 @@ labels: bug
 
 ## Summary
 
-<!-- What went wrong? One or two sentences. -->
+What failed? Keep it to 1-2 sentences.
 
 ## Environment
 
@@ -15,6 +15,8 @@ labels: bug
 - Docker version:
 - Install method: `install.sh` / `install.ps1`
 - Hades version or commit:
+- Provider used:
+- Browser support installed? yes/no
 
 ## Command used
 
@@ -28,7 +30,7 @@ paste here
 
 ## Logs
 
-> Remove secrets and keys before posting.
+> Remove secrets, API keys, bearer tokens, and internal URLs before posting.
 
 ```text
 paste here
@@ -36,4 +38,12 @@ paste here
 
 ## Steps to reproduce
 
-<!-- Minimal reproduction if you can. -->
+1.
+2.
+3.
+
+## Extra context
+
+- Does this happen on a clean install?
+- Did `hades update` or `hades restart` change anything?
+- Is this installer-only, runtime-only, or both?

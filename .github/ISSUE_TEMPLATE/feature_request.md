@@ -4,14 +4,28 @@ about: Suggest an improvement to the installer, CLI, or docs
 labels: enhancement
 ---
 
-## Problem
+## Summary
 
-<!-- What's frustrating or missing today? -->
+What should HADES do that it does not do today?
 
-## What you'd want instead
+## Why this matters
 
-<!-- Concrete change or behavior. -->
+Explain the user pain or maintainer pain this would remove.
 
-## Alternatives you considered
+## Proposed behavior
+
+Describe the exact behavior you want.
+
+## Alternatives considered
+
+## Scope
+
+- Installer
+- Runtime
+- Docs
+- Release / CI
+- Security / support
 
 ## Anything else
+
+If this should be a good-first-issue or help-wanted item, say why.

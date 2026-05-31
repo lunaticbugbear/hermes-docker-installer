@@ -50,6 +50,42 @@ The release workflow picks it up automatically and publishes assets to GitHub Re
 sha256sum -c SHA256SUMS
 ```
 
+If release signing is enabled, verify that signature too and treat checksums as the baseline, not the whole story.
+
+## Release integrity
+
+Current release trust chain:
+
+- release assets
+- `SHA256SUMS`
+- SPDX SBOM (`sbom.spdx.json`)
+- GitHub artifact provenance attestation
+- optional SBOM attestation when the workflow publishes an SBOM
+
+Use checksums and attestations as tamper-evidence, not as a claim that the project is bug-free or inherently safe.
+
+### Maintainer release checklist
+
+- [ ] release workflow is green
+- [ ] checksum file is attached
+- [ ] SPDX SBOM is attached
+- [ ] provenance attestation succeeded
+- [ ] SBOM attestation succeeded if enabled
+- [ ] release notes include exact verification commands
+- [ ] release notes do not claim signatures unless the workflow actually publishes them
+
+### Recovery
+
+If a bad asset or tag goes out:
+
+1. stop new promotion
+2. fix the release workflow or source commit
+3. cut a follow-up tag
+4. explain the correction in the release notes
+5. leave the broken asset visible only if you need it for audit
+
+Document the verification steps in `docs/RELEASE_VERIFICATION.md` and keep `SECURITY.md` aligned.
+
 ## Changelog
 
 Every user-visible change goes in `CHANGELOG.md` before tagging. That includes:
@@ -67,3 +103,5 @@ Every user-visible change goes in `CHANGELOG.md` before tagging. That includes:
 - [ ] `CHANGELOG.md` has an entry
 - [ ] tag format is `v*`
 - [ ] published assets include `SHA256SUMS`
+- [ ] signing method is documented if used
+- [ ] security-sensitive changes are reflected in `SECURITY.md` and `SUPPORT.md`

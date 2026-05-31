@@ -2,9 +2,9 @@
 
 # HADES
 
-**One command. A full AI coding agent on your machine.**
+**One command. A reproducible local AI coding agent runtime.**
 
-No Python setup. No dependency hell. No 45-minute install guides.
+HADES is a cross-platform Docker installer and runtime wrapper for [Hermes Agent](https://github.com/NousResearch/hermes-agent). It turns fragile local AI-agent setup into a reproducible one-command workflow with persistent state, localhost-only API access, and unified CLI operations.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/lunaticbugbear/hades-hermes-agent/main/install.sh | bash
@@ -12,40 +12,73 @@ curl -fsSL https://raw.githubusercontent.com/lunaticbugbear/hades-hermes-agent/m
 
 <a href="https://github.com/lunaticbugbear/hades-hermes-agent/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/lunaticbugbear/hades-hermes-agent?style=social"></a>
 <a href="https://github.com/lunaticbugbear/hades-hermes-agent/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/lunaticbugbear/hades-hermes-agent/actions/workflows/ci.yml/badge.svg"></a>
+<a href="https://github.com/lunaticbugbear/hades-hermes-agent/releases"><img alt="Release" src="https://img.shields.io/github/v/release/lunaticbugbear/hades-hermes-agent"></a>
 <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+<a href="SECURITY.md"><img alt="Security policy" src="https://img.shields.io/badge/security-policy-blue"></a>
 <img alt="Platforms" src="https://img.shields.io/badge/Platforms-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20WSL-blueviolet">
 
-**Tested across 4 platforms. Security-first defaults. Persistent memory.**
+**Exact defaults: localhost-only API, opt-in browser tooling, conservative uninstall, persistent Docker volume.**
+
+**Verified by CI: bash, PowerShell, docs sanity, Docker smoke.**
 
 </div>
 
 ---
 
+## Why this project exists
+
+Open-source coding agents are powerful, but local setup is often the hard part: Python versions, browser dependencies, Playwright, virtualenvs, API keys, OS-specific path handling, and broken configs after updates.
+
+HADES exists to make open-source coding agents easier to adopt, safer to run locally, and less dependent on host-specific setup knowledge.
+
+## Visual proof
+
+![HADES install flow](assets/hades-install.svg)
+
+![HADES status flow](assets/hades-status.svg)
+
+## What HADES gives you
+
+- MIT-licensed OSS installer source.
+- Public releases with installer assets and checksums.
+- CI validates shell scripts, PowerShell scripts, Docker Compose output, docs, and smoke paths.
+- API binds to `127.0.0.1` by default.
+- Provider keys live in `~/.hades/.env`; Unix installs use `chmod 600`.
+- Browser automation support is opt-in.
+- Uninstall is conservative by default; data removal requires explicit flags.
+- Hermes sessions, memory, skills, and config survive container rebuilds.
+
 ## The problem
 
 You found an open-source AI coding agent that actually works. You go to install it. The README says:
 
-> Install Python 3.12. Build Chromium from source. Set up Playwright. Configure venv. Wire your API key. Fix the path. Fix the permissions. Fix it again after an OS update.
+> Install Python 3.12. Install Chromium. Set up Playwright. Configure venv. Wire your API key. Fix the path. Fix the permissions. Fix it again after an OS update.
 
-45 minutes later, you are debugging pip conflicts instead of writing code.
+45 minutes later, you are debugging environment drift instead of writing code.
 
 ## The solution
 
-HADES wraps [Hermes Agent](https://github.com/NousResearch/hermes-agent) (by NousResearch) in a single Docker container. One command installs everything. Your host machine stays clean. Sessions, memory, and config survive restarts.
-
-**Before vs After:**
+HADES wraps Hermes Agent in a Docker container. One command installs everything. Your host machine stays clean. Sessions, memory, and config survive restarts.
 
 | Before HADES | After HADES |
 |---|---|
-| 30-45 min install, per OS | 60 seconds, any OS |
-| Python + Chromium + Playwright + venv manually | Docker handles it |
-| Config breaks on OS update | Isolated container, nothing to break |
-| API keys in shell history | `~/.hades/.env`, chmod 600, never logged |
-| Sessions lost on restart | Persistent volume survives rebuilds |
+| 30-45 min install, per OS | One command, same workflow across OSes |
+| Python + Chromium + Playwright + venv manually | Docker handles runtime dependencies |
+| Config breaks on OS update | Isolated container runtime |
+| API keys risk ending up in shell history | `~/.hades/.env`, chmod 600, never logged intentionally |
+| Sessions lost on restart | Persistent Docker volume survives rebuilds |
 
 ---
 
 ## Quick start
+
+**Verify before install**
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/lunaticbugbear/hades-hermes-agent/main/install.sh
+sha256sum install.sh
+bash install.sh --help
+```
 
 **Linux / macOS / WSL**
 
@@ -74,7 +107,7 @@ hades restart        # reload after config changes
 hades update         # rebuild image
 hades stop           # pause
 hades down           # stop + remove networks
-hades reset          # nuclear: wipe everything
+hades reset          # destructive: wipe persistent Hermes data
 ```
 
 ---
@@ -96,7 +129,7 @@ hades reset          # nuclear: wipe everything
 <details>
 <summary><strong>Configuration</strong></summary>
 
-Edit `~/.hades/.env`, then `hades restart`. For build-time changes (browser support, version pin): `hades update`.
+Edit `~/.hades/.env`, then `hades restart`. For build-time changes such as browser support or version pins, run `hades update`.
 
 | Variable | Default | Description |
 |---|---|---|
@@ -105,7 +138,7 @@ Edit `~/.hades/.env`, then `hades restart`. For build-time changes (browser supp
 | `HERMES_VERSION` | `v2026.5.29` | Pinned Hermes release tag |
 | `PYTHON_VERSION` | `3.12-slim-bookworm` | Docker base image variant |
 | `GATEWAY_ALLOW_ALL_USERS` | `true` | Allow any API key to act as any user |
-| `API_SERVER_KEY` | *(generated)* | Bearer token for the API server |
+| `API_SERVER_KEY` | generated | Bearer token for the API server |
 
 </details>
 
@@ -145,14 +178,14 @@ bash uninstall.sh --remove-files --remove-data # gone
 |---|---|
 | Docker not found | Linux: `sudo systemctl start docker`. macOS: open Docker.app. Windows: open Docker Desktop. |
 | Port 8642 in use | `hades stop` or install with `--port 18642` |
-| Config changes not applied | `hades restart` (or `hades update` for build-time changes) |
-| Browser tools missing | `bash install.sh --browser --force` browser is opt-in (~450 MB) |
+| Config changes not applied | `hades restart` or `hades update` for build-time changes |
+| Browser tools missing | `bash install.sh --browser --force`; browser support is opt-in and adds roughly 450 MB |
 
 </details>
 
 ---
 
-## How it works
+## Architecture
 
 ```text
  HOST                                     CONTAINER
@@ -168,25 +201,30 @@ bash uninstall.sh --remove-files --remove-data # gone
                                 +-----------------------------+
 ```
 
-- **Workspace** is bind-mounted for direct file access
-- **Hermes state** (sessions, memory, skills, config) lives in a named Docker volume — survives container rebuilds
-- **API** binds to localhost only — never exposed to network
+- **Workspace** is bind-mounted for direct file access.
+- **Hermes state** lives in a named Docker volume and survives container rebuilds.
+- **API** binds to localhost only by default.
 
 ---
 
 ## CI pipeline
 
-Every push validates: bash syntax, ShellCheck, PowerShell parser, Compose config, generated helper scripts, uninstall safety, docs sanity, and repo hygiene. Docker build + API health probe runs on `main`.
+Every push validates bash syntax, ShellCheck, PowerShell parsing, Compose config, generated helper scripts, uninstall safety, docs sanity, and repo hygiene. Docker build + API health probe runs on `main`.
 
-A daily workflow checks for new [Hermes Agent](https://github.com/NousResearch/hermes-agent) releases and opens a PR to bump the version pin automatically.
+A daily workflow checks for new Hermes Agent releases and opens a PR to bump the version pin automatically.
 
 ## Docs
 
 - [Architecture](docs/ARCHITECTURE.md) — runtime layout, lifecycle, security model
 - [Operations](docs/OPERATIONS.md) — triage playbook, maintainer tasks, recovery
-- [Release Process](docs/RELEASE_PROCESS.md) — tagging and publishing
+- [Release Process](docs/RELEASE_PROCESS.md) — tagging, publishing, verification
+- [Release Verification](docs/RELEASE_VERIFICATION.md) — asset verification checklist
+- [Roadmap](ROADMAP.md) — public backlog and maintainer priorities
+- [Maintainers](MAINTAINERS.md) — ownership, review scope, platform expectations
 - [Contributing](CONTRIBUTING.md) — validation and review expectations
-- [Security](SECURITY.md) — reporting and hardening
+- [Support](SUPPORT.md) — support path and issue requirements
+- [Security](SECURITY.md) — reporting, hardening, supported versions
+- [Changelog](CHANGELOG.md) — release history
 
 ## License
 

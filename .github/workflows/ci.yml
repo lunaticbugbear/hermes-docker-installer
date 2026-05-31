@@ -88,6 +88,9 @@ jobs:
           test -f docs/ARCHITECTURE.md
           test -f docs/OPERATIONS.md
           test -f docs/RELEASE_PROCESS.md
+          test -f docs/RELEASE_VERIFICATION.md
+          test -f ROADMAP.md
+          test -f MAINTAINERS.md
           test -f .editorconfig
           test -f .github/CODEOWNERS
           test -f .github/dependabot.yml
@@ -118,11 +121,43 @@ jobs:
           grep -q 'raw.githubusercontent.com/lunaticbugbear/hades-hermes-agent/main/install.ps1' README.md
       - name: Core docs are linked from README
         run: |
-          grep -q '## CI' README.md
+          grep -q '## CI pipeline' README.md
           grep -q '## Docs' README.md
           grep -q 'docs/ARCHITECTURE.md' README.md
           grep -q 'docs/OPERATIONS.md' README.md
           grep -q 'docs/RELEASE_PROCESS.md' README.md
+          grep -q 'docs/RELEASE_VERIFICATION.md' README.md
+          grep -q 'ROADMAP.md' README.md
+          grep -q 'MAINTAINERS.md' README.md
+          grep -q 'SECURITY.md' README.md
+          grep -q 'SUPPORT.md' README.md
+      - name: Release trust docs match workflow
+        run: |
+          grep -q 'id-token: write' .github/workflows/release.yml
+          grep -q 'attestations: write' .github/workflows/release.yml
+          grep -q 'sbom.spdx.json' .github/workflows/release.yml
+          grep -q 'actions/attest@v4' .github/workflows/release.yml
+          grep -q 'sha256sum -c SHA256SUMS' docs/RELEASE_VERIFICATION.md
+          grep -q 'SBOM' docs/RELEASE_VERIFICATION.md
+          grep -q 'attestation' docs/RELEASE_VERIFICATION.md
+      - name: No trust overclaims
+        run: |
+          if grep -R -iE 'signed release|SLSA compliant|tamper-proof' README.md docs SECURITY.md SUPPORT.md CHANGELOG.md; then
+            echo 'Found release/security overclaim wording.'
+            exit 1
+          fi
+          if grep -R -iE 'bug-free|malware-free' README.md docs SECURITY.md SUPPORT.md CHANGELOG.md | grep -v -E 'not as a claim|Do not treat' ; then
+            echo 'Found unsafe absolute safety claim wording.'
+            exit 1
+          fi
+          if grep -R -iE 'reproducible image builds' README.md docs SECURITY.md SUPPORT.md; then
+            echo 'Found unsupported reproducibility claim in public docs.'
+            exit 1
+          fi
+          if grep -R -iE 'secure install' README.md docs SECURITY.md SUPPORT.md CHANGELOG.md; then
+            echo 'Found vague secure-install wording.'
+            exit 1
+          fi
 
   smoke:
     name: Docker build + smoke test

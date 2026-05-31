@@ -173,6 +173,20 @@ If a release breaks installs:
 4. Rerun validation and CI
 5. Publish a follow-up tag if users hit it from a tagged release
 
+### Compromised release asset
+
+1. Mark the bad asset as broken in the release notes or follow-up issue.
+2. Publish a corrected release/tag.
+3. Explain what changed and how users should verify the replacement.
+4. Keep checksum and attestation docs aligned.
+
+### Bad checksum or SBOM
+
+1. Treat it as a release integrity bug.
+2. Rebuild the release asset set.
+3. Regenerate checksum/SBOM files.
+4. Republish the release notes with the corrected verification steps.
+
 If a user's runtime is broken but their data should survive:
 
 ```bash

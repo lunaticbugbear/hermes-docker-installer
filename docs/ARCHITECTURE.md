@@ -14,6 +14,20 @@ It handles:
 
 ## Runtime layout
 
+```text
+ HOST                                     CONTAINER
++------------------------+      +-----------------------------+
+| ~/.hades/              |      | hades                       |
+|   .env                 |      |   hermes gateway run        |
+|   docker-compose.yml   |      |   API: 127.0.0.1:8642       |
+|   workspace/  <--------+------+-> /workspace                |
+|                        |      |                             |
++------------------------+      |   /root/.hermes <-----------+-- volume
+                                |   (sessions, memory,        |
+                                |    skills, config)          |
+                                +-----------------------------+
+```
+
 ### Host side (install directory, default `~/.hades/`)
 
 - `.env` — provider keys, model, API port, build flags

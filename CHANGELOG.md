@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- Added `MAINTAINERS.md` to make ownership, review scope, platform support, and release authority explicit.
+- Added `ROADMAP.md` with public priorities, maintainer backlog, and suggested starter issues.
+- Added `.gitattributes` to keep shell, docs, workflow, and PowerShell line endings predictable across platforms.
+- Added `docs/RELEASE_VERIFICATION.md` with a release verification checklist.
+
+### Changed
+- Reframed `README.md` around reproducible local runtime value, trust signals, visual proof, and evidence links.
+- Expanded issue templates and PR template to collect better reproduction detail, scope, and risk notes.
+- Strengthened `SECURITY.md` with disclosure timeline, supported-versions matrix, and release-integrity guidance.
+- Strengthened `SUPPORT.md` with clearer issue routing and support expectations.
+- Extended docs sanity checks in CI to require new maintainer docs and README links.
+- Expanded `docs/ARCHITECTURE.md` and `docs/RELEASE_PROCESS.md` to surface architecture and release verification more clearly.
+
 ## [1.3.0] - 2026-05-29
 
 ### Security
