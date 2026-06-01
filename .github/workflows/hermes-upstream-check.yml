@@ -41,8 +41,8 @@ jobs:
           OLD: ${{ steps.current.outputs.current }}
           NEW: ${{ steps.upstream.outputs.latest }}
         run: |
-          # shellcheck disable=SC2016  # backticks are literal markdown, not expansion
           TITLE="chore: bump Hermes pin to $NEW"
+          # shellcheck disable=SC2016  # backticks are literal markdown, not expansion
           BODY=$(printf 'Upstream Hermes released `%s` while HADES pins `%s`.\n\nUpdate `HERMES_VERSION` in `install.sh` and `install.ps1`, then validate and cut a release.\n\nUpstream release: https://github.com/NousResearch/hermes-agent/releases/tag/%s' "$NEW" "$OLD" "$NEW")
           EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$TITLE in:title" --json number --jq '.[0].number')
           if [ -n "$EXISTING" ]; then
