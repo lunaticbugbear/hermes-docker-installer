@@ -4,19 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-06-01
+
 ### Added
 - Added `MAINTAINERS.md` to make ownership, review scope, platform support, and release authority explicit.
 - Added `ROADMAP.md` with public priorities, maintainer backlog, and suggested starter issues.
 - Added `.gitattributes` to keep shell, docs, workflow, and PowerShell line endings predictable across platforms.
 - Added `docs/RELEASE_VERIFICATION.md` with a release verification checklist.
+- Added release provenance attestation and an SPDX SBOM to the release workflow.
 
 ### Changed
 - Reframed `README.md` around reproducible local runtime value, trust signals, visual proof, and evidence links.
+- Added a verify-before-install path to the README quick start.
 - Expanded issue templates and PR template to collect better reproduction detail, scope, and risk notes.
-- Strengthened `SECURITY.md` with disclosure timeline, supported-versions matrix, and release-integrity guidance.
-- Strengthened `SUPPORT.md` with clearer issue routing and support expectations.
-- Extended docs sanity checks in CI to require new maintainer docs and README links.
-- Expanded `docs/ARCHITECTURE.md` and `docs/RELEASE_PROCESS.md` to surface architecture and release verification more clearly.
+- Strengthened `SECURITY.md` with disclosure timeline, supported-versions matrix, layered integrity guidance, and scope boundaries.
+- Strengthened `SUPPORT.md` with clearer issue routing, triage contract, and support expectations.
+- Extended docs sanity checks in CI to require new maintainer docs, README links, and release-trust wording guards.
+- Expanded `docs/ARCHITECTURE.md`, `docs/OPERATIONS.md`, and `docs/RELEASE_PROCESS.md` to surface architecture, incident playbooks, and release verification more clearly.
 
 ## [1.3.0] - 2026-05-29
 
