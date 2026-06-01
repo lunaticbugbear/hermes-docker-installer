@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Bumped pinned upstream Hermes Agent version from `v2026.5.29` to `v2026.5.29.2` in `install.sh`, `install.ps1`, and `.env.template`.
+- Bumped `github/codeql-action` from `v3` to `v4` in the OpenSSF Scorecard workflow.
 
 ## [1.4.1] - 2026-06-01
 
