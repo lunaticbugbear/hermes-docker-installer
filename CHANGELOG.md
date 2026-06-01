@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-06-01
+
 ### Added
 - Added `docs/QUICKSTART.md`, `docs/FAQ.md`, and `docs/GLOSSARY.md` for newcomer onboarding.
 - Added `GOVERNANCE.md` documenting roles, decision classes, and release authority.

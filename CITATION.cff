@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use HADES, please cite it using the metadata below."
 title: "HADES — Hermes Agent Docker Environment Script"
-version: "1.4.0"
+version: "1.4.1"
 date-released: "2026-06-01"
 abstract: "A cross-platform Docker installer and runtime wrapper for Hermes Agent. Reproducible one-command install with persistent state, localhost-only API, and unified CLI operations."
 type: software
