@@ -13,11 +13,13 @@ HADES is already usable as a local Docker wrapper for Hermes Agent. The roadmap 
 
 ### Release integrity and verification
 
-- Publish checksums for release assets.
-- Add a documented attestation path for shipped release assets.
 - Keep release assets easy to verify.
 - Document how users can validate downloaded installers.
 - Keep signatures/backstops under planned work until actually shipped.
+
+Already shipped in `v1.4.0`: published checksums and a documented GitHub
+artifact provenance attestation path. See `CHANGELOG.md` and
+`docs/RELEASE_VERIFICATION.md`.
 
 ### Smoke tests and health checks
 
@@ -75,6 +77,7 @@ Suggested public issue titles:
 
 - `docs: add provider configuration examples`
 - `docs: add Docker volume backup and restore guide`
+- `docs: record a real terminal capture of the install/runtime flow`
 - `ci: validate generated Windows wrapper metadata`
 - `release: document cosign-based asset verification`
 - `tests: cover reinstall with existing ~/.hades config`

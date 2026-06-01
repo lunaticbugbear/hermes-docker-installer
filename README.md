@@ -218,7 +218,7 @@ bash uninstall.sh --remove-files --remove-data # gone
 
 Every push validates bash syntax, ShellCheck, PowerShell parsing, Compose config, generated helper scripts, uninstall safety, docs sanity, and repo hygiene. Docker build + API health probe runs on `main`.
 
-A daily workflow checks for new Hermes Agent releases and opens a PR to bump the version pin automatically.
+A daily workflow checks for new Hermes Agent releases and opens or updates a tracking issue when the pinned version is behind upstream.
 
 ## Docs
 

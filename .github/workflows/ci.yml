@@ -183,21 +183,22 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Check relative doc links resolve
         run: |
-          fail=0
+          broken=0
           while IFS= read -r -d '' md; do
             dir=$(dirname "$md")
-            grep -oE '\]\(([^)#]+)' "$md" | sed -E 's/^\]\(//' | while IFS= read -r link; do
+            links=$(grep -oE '\]\(([^)#]+)' "$md" | sed -E 's/^\]\(//' || true)
+            [ -z "$links" ] && continue
+            while IFS= read -r link; do
               case "$link" in
                 http://*|https://*|mailto:*|"") continue ;;
               esac
-              target="$dir/$link"
-              if [ ! -e "$target" ]; then
+              if [ ! -e "$dir/$link" ]; then
                 echo "Broken link in $md -> $link"
-                exit 1
+                broken=1
               fi
-            done || fail=1
+            done <<< "$links"
           done < <(find . -name '*.md' -not -path './.git/*' -print0)
-          if [ "$fail" -ne 0 ]; then exit 1; fi
+          if [ "$broken" -ne 0 ]; then exit 1; fi
           echo "link-check-ok"
 
   changelog:

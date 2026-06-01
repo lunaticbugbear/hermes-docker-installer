@@ -43,6 +43,7 @@ The release workflow picks it up automatically and publishes assets to GitHub Re
 - `SECURITY.md`
 - `SUPPORT.md`
 - `SHA256SUMS`
+- `sbom.spdx.json`
 
 ## Verifying a release
 

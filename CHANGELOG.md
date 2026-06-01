@@ -21,6 +21,19 @@ All notable changes to this project will be documented in this file.
 ### Removed
 - Removed synthetic SVG "visual proof" art and its generators in favor of an honest demo-pending note and the CI smoke test.
 
+### Fixed
+- Markdown link-check CI job no longer fails on docs that contain no links (rewrote the bash to avoid `pipefail` + `grep` no-match exit collapsing the whole pipeline).
+- README and CHANGELOG now correctly state that the daily upstream check files a tracking issue (matches the current workflow behavior).
+- Bumped `install.sh` `VERSION` constant to `1.4.0` and added a parallel `$Version` parameter to `install.ps1` so installer self-identification matches the published release.
+- `random_hex()` in `install.sh` now falls back through `/dev/urandom` and refuses to generate an `API_SERVER_KEY` if no CSPRNG is available, instead of seeding from an epoch second.
+- `.gitignore` now ignores the real generated wrapper paths (`bin/hades`, `bin/hades.ps1`, `bin/hades.cmd`) instead of the historical `omnipod` names.
+- `docs/GLOSSARY.md` provider list, workspace path, API-key path, and non-interactive install entries now describe the installer's actual values.
+- `docs/QUICKSTART.md` provider example renamed to "Google Gemini" so it matches the installer's `google` value.
+- `docs/RELEASE_PROCESS.md` "What gets published" list now includes `sbom.spdx.json`.
+- `.env.template` documents `COMPOSE_PROJECT_NAME` and clarifies that `PYTHON_VERSION` and `GATEWAY_ALLOW_ALL_USERS` are honored at build/runtime, not by the installer's host `.env` writer.
+- `ROADMAP.md` moves shipped release-integrity items out of "Current priorities" and adds a backlog entry for the demo terminal capture referenced in README and `assets/README.md`.
+- Pinned `CITATION.cff` to `version: 1.4.0` with `date-released: 2026-06-01`.
+
 ## [1.4.0] - 2026-06-01
 
 ### Added
@@ -54,7 +67,7 @@ All notable changes to this project will be documented in this file.
 - Fixed variable scoping: replaced `declare` with `printf -v` for API key assignment in interactive mode
 - Aligned VERSION constant to match changelog
 - PS1 `Safe-Write` now backs up existing files before overwrite (matches bash behavior)
-- Added daily upstream Hermes release checker workflow (auto-PR when new tags appear)
+- Added daily upstream Hermes release checker workflow (files a tracking issue when new tags appear)
 
 ## [1.2.0] - 2026-05-28
 

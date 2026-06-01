@@ -28,7 +28,7 @@ powershell -ExecutionPolicy Bypass -c "Invoke-WebRequest -Uri 'https://raw.githu
 ```
 
 The installer asks three questions:
-- which provider you want to use (OpenRouter, Anthropic, OpenAI, Gemini, DeepSeek, or a custom endpoint)
+- which provider you want to use (OpenRouter, Anthropic, OpenAI, Google Gemini, DeepSeek, or a custom endpoint)
 - your API key for that provider
 - which model to default to
 

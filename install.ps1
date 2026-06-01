@@ -5,6 +5,7 @@
 #   .\install.ps1 -Provider openrouter -Model deepseek/deepseek-v4-flash:free -OpenRouterApiKey sk-...
 
 param(
+  [string]$Version = '1.4.0',
   [string]$InstallDir = $(
     $isAdmin = [bool](([System.Security.Principal.WindowsPrincipal][System.Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator))
     if ($isAdmin) { Join-Path $env:ProgramFiles 'hades' } else { "$env:USERPROFILE\.hades" }

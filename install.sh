@@ -33,7 +33,7 @@ if [ -n "${PYTHONHOME:-}" ]; then
   unset PYTHONHOME
 fi
 
-VERSION="1.3.0"
+VERSION="1.4.0"
 DEFAULT_DIR=""
 if [ "$(id -u)" -eq 0 ]; then
   DEFAULT_DIR="/usr/local/lib/hades"
@@ -338,7 +338,8 @@ random_hex() {
 import secrets
 print(secrets.token_hex(24))
 PY
-  else date +%s | sha256sum | cut -c1-48
+  elif [ -r /dev/urandom ]; then head -c 24 /dev/urandom | od -An -tx1 | tr -d ' \n'
+  else die "No CSPRNG available (need openssl, python3, or /dev/urandom). Refusing to generate API_SERVER_KEY."
   fi
 }
 
