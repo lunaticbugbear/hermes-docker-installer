@@ -32,11 +32,9 @@ Open-source coding agents are powerful, but local setup is often the hard part: 
 
 HADES exists to make open-source coding agents easier to adopt, safer to run locally, and less dependent on host-specific setup knowledge.
 
-## Visual proof
+## Demo
 
-![HADES install flow](assets/hades-install.svg)
-
-![HADES status flow](assets/hades-status.svg)
+A real terminal capture is on the roadmap. Until then, the install and runtime flow is exercised on every release by the CI smoke test in `.github/workflows/ci.yml`.
 
 ## What HADES gives you
 
@@ -73,15 +71,23 @@ HADES wraps Hermes Agent in a Docker container. One command installs everything.
 
 ## Quick start
 
-**Verify before install**
+**Recommended: verify, then install**
 
 ```bash
 curl -fsSLO https://raw.githubusercontent.com/lunaticbugbear/hades-hermes-agent/main/install.sh
-sha256sum install.sh
-bash install.sh --help
+less install.sh
+bash install.sh
 ```
 
-**Linux / macOS / WSL**
+After a published release, you can verify the asset against checksums and the build attestation:
+
+```bash
+gh release download v1.4.0 -R lunaticbugbear/hades-hermes-agent
+sha256sum -c SHA256SUMS
+gh attestation verify install.sh -R lunaticbugbear/hades-hermes-agent
+```
+
+**Fast path (Linux / macOS / WSL)**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/lunaticbugbear/hades-hermes-agent/main/install.sh | bash

@@ -15,16 +15,8 @@ Suggested upload path in GitHub UI:
 
 The matching SVG source is `social-preview.svg` for future edits.
 
-## README visuals
+## Demo media
 
-These SVGs are linked from the README as lightweight project visuals:
-
-- `hades-install.svg` — install/onboarding flow
-- `hades-status.svg` — status/runtime flow
-
-Regenerate them with:
-
-```bash
-python assets/generate_install_shot.py
-python assets/generate_status_shot.py
-```
+There is no synthetic demo art in this repo. A real terminal capture of the
+install and runtime flow is on the roadmap. Until it exists, the install path
+is exercised by the CI smoke test in `.github/workflows/ci.yml`.

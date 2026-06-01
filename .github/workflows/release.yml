@@ -23,10 +23,10 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       TAG_NAME: ${{ github.event.inputs.tag || github.ref_name }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Install Syft
-        uses: anchore/sbom-action/download-syft@v0
+        uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0
 
       - name: Prepare release assets
         run: |
@@ -61,12 +61,12 @@ jobs:
           } > RELEASE_NOTES.md
 
       - name: Generate provenance attestation
-        uses: actions/attest@v4
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4
         with:
           subject-path: dist/install.sh
 
       - name: Generate SBOM attestation
-        uses: actions/attest@v4
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4
         with:
           subject-path: dist/install.sh
           sbom-path: dist/sbom.spdx.json

@@ -10,7 +10,16 @@ All notable changes to this project will be documented in this file.
 - Added `CITATION.cff` for citable project metadata.
 - Added a question issue template for usage questions.
 - Added an OpenSSF Scorecard workflow for supply-chain posture reporting.
+- Added `.env.template` documenting every installer environment variable.
+- Added CI jobs for workflow linting (actionlint), markdown link checking, and changelog enforcement on sensitive changes.
 - Extended Dependabot to cover Docker base images alongside GitHub Actions.
+
+### Changed
+- Pinned all GitHub Actions to commit SHAs with version comments for supply-chain integrity.
+- Reordered the README quick start so verify-before-install is the primary path and `curl | bash` is the fast path.
+
+### Removed
+- Removed synthetic SVG "visual proof" art and its generators in favor of an honest demo-pending note and the CI smoke test.
 
 ## [1.4.0] - 2026-06-01
 

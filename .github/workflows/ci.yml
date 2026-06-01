@@ -18,7 +18,7 @@ jobs:
     name: Shell scripts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install shellcheck
         run: sudo apt-get update && sudo apt-get install -y shellcheck
       - name: Bash syntax
@@ -36,7 +36,7 @@ jobs:
     name: PowerShell scripts
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Parse PowerShell scripts
         shell: pwsh
         run: |
@@ -51,7 +51,7 @@ jobs:
     name: Generated Docker Compose config
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Generate files without build
         run: |
           HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-token-123456789 bash install.sh --skip-build --force --dir "$RUNNER_TEMP/hades-ci"
@@ -75,7 +75,7 @@ jobs:
     name: Docs sanity
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Required files exist
         run: |
           test -f README.md
@@ -143,7 +143,7 @@ jobs:
           grep -q 'id-token: write' .github/workflows/release.yml
           grep -q 'attestations: write' .github/workflows/release.yml
           grep -q 'sbom.spdx.json' .github/workflows/release.yml
-          grep -q 'actions/attest@v4' .github/workflows/release.yml
+          grep -q 'actions/attest@' .github/workflows/release.yml
           grep -q 'sha256sum -c SHA256SUMS' docs/RELEASE_VERIFICATION.md
           grep -q 'SBOM' docs/RELEASE_VERIFICATION.md
           grep -q 'attestation' docs/RELEASE_VERIFICATION.md
@@ -166,12 +166,73 @@ jobs:
             exit 1
           fi
 
+  actionlint:
+    name: Workflow lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Run actionlint
+        run: |
+          bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint -color
+
+  links:
+    name: Markdown link check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Check relative doc links resolve
+        run: |
+          fail=0
+          while IFS= read -r -d '' md; do
+            dir=$(dirname "$md")
+            grep -oE '\]\(([^)#]+)' "$md" | sed -E 's/^\]\(//' | while IFS= read -r link; do
+              case "$link" in
+                http://*|https://*|mailto:*|"") continue ;;
+              esac
+              target="$dir/$link"
+              if [ ! -e "$target" ]; then
+                echo "Broken link in $md -> $link"
+                exit 1
+              fi
+            done || fail=1
+          done < <(find . -name '*.md' -not -path './.git/*' -print0)
+          if [ "$fail" -ne 0 ]; then exit 1; fi
+          echo "link-check-ok"
+
+  changelog:
+    name: Changelog enforcement
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+      - name: Require CHANGELOG update for sensitive changes
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          changed=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          echo "Changed files:"; echo "$changed"
+          if echo "$changed" | grep -qE '^(install\.sh|install\.ps1|uninstall\.sh|uninstall\.ps1|\.github/workflows/)'; then
+            if echo "$changed" | grep -qx 'CHANGELOG.md'; then
+              echo "changelog-updated-ok"
+            else
+              echo 'Sensitive files changed but CHANGELOG.md was not updated.'
+              echo 'Add an entry under [Unreleased] in CHANGELOG.md.'
+              exit 1
+            fi
+          else
+            echo 'No sensitive files changed; changelog update not required.'
+          fi
+
   smoke:
     name: Docker build + smoke test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Generate files
         run: |
           HERMES_NONINTERACTIVE=1 OPENROUTER_API_KEY=dummy-token-123456789 bash install.sh --skip-build --force --dir "$RUNNER_TEMP/hermes-smoke"
