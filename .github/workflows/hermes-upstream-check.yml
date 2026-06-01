@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  issues: write
 
 concurrency:
   group: hermes-upstream-bump
@@ -34,40 +34,18 @@ jobs:
           CURRENT=$(grep -oP 'HERMES_VERSION="\$\{HERMES_VERSION:-\K[^}]+' install.sh)
           echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
 
-      - name: Compare and update
+      - name: Open or update tracking issue
         if: steps.upstream.outputs.latest != steps.current.outputs.current
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OLD: ${{ steps.current.outputs.current }}
+          NEW: ${{ steps.upstream.outputs.latest }}
         run: |
-          OLD="${{ steps.current.outputs.current }}"
-          NEW="${{ steps.upstream.outputs.latest }}"
-          echo "Bumping HERMES_VERSION: $OLD -> $NEW"
-
-          # install.sh — default variable
-          sed -i "s|HERMES_VERSION=\"\${HERMES_VERSION:-$OLD}\"|HERMES_VERSION=\"\${HERMES_VERSION:-$NEW}\"|" install.sh
-
-          # install.sh — Dockerfile ARG in heredoc templates
-          sed -i "s|ARG HERMES_VERSION=$OLD|ARG HERMES_VERSION=$NEW|g" install.sh
-
-          # install.sh — docker-compose template
-          sed -i "s|HERMES_VERSION: \${HERMES_VERSION:-$OLD}|HERMES_VERSION: \${HERMES_VERSION:-$NEW}|g" install.sh
-
-          # install.ps1 — param default
-          sed -i "s|else { '$OLD' }|else { '$NEW' }|g" install.ps1
-
-          # install.ps1 — Dockerfile ARG in heredoc templates
-          sed -i "s|ARG HERMES_VERSION=$OLD|ARG HERMES_VERSION=$NEW|g" install.ps1
-
-          # install.ps1 — docker-compose template
-          sed -i "s|HERMES_VERSION: \${HERMES_VERSION:-$OLD}|HERMES_VERSION: \${HERMES_VERSION:-$NEW}|g" install.ps1
-
-      - name: Create pull request
-        if: steps.upstream.outputs.latest != steps.current.outputs.current
-        uses: peter-evans/create-pull-request@v7
-        with:
-          branch: chore/bump-hermes-${{ steps.upstream.outputs.latest }}
-          commit-message: "chore: bump Hermes pin to ${{ steps.upstream.outputs.latest }}"
-          title: "chore: bump Hermes pin to ${{ steps.upstream.outputs.latest }}"
-          body: |
-            Bumps `HERMES_VERSION` from `${{ steps.current.outputs.current }}` to `${{ steps.upstream.outputs.latest }}`.
-
-            Upstream release: https://github.com/NousResearch/hermes-agent/releases/tag/${{ steps.upstream.outputs.latest }}
-          labels: dependencies
+          TITLE="chore: bump Hermes pin to $NEW"
+          BODY=$(printf 'Upstream Hermes released `%s` while HADES pins `%s`.\n\nUpdate `HERMES_VERSION` in `install.sh` and `install.ps1`, then validate and cut a release.\n\nUpstream release: https://github.com/NousResearch/hermes-agent/releases/tag/%s' "$NEW" "$OLD" "$NEW")
+          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$TITLE in:title" --json number --jq '.[0].number')
+          if [ -n "$EXISTING" ]; then
+            echo "Tracking issue already open: #$EXISTING"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY" --label dependencies
+          fi
