@@ -89,15 +89,22 @@ jobs:
           test -f docs/OPERATIONS.md
           test -f docs/RELEASE_PROCESS.md
           test -f docs/RELEASE_VERIFICATION.md
+          test -f docs/QUICKSTART.md
+          test -f docs/FAQ.md
+          test -f docs/GLOSSARY.md
           test -f ROADMAP.md
           test -f MAINTAINERS.md
+          test -f GOVERNANCE.md
+          test -f CITATION.cff
           test -f .editorconfig
           test -f .github/CODEOWNERS
           test -f .github/dependabot.yml
           test -f .github/workflows/release.yml
           test -f .github/workflows/repo-hygiene.yml
+          test -f .github/workflows/scorecard.yml
           test -f .github/ISSUE_TEMPLATE/bug_report.md
           test -f .github/ISSUE_TEMPLATE/feature_request.md
+          test -f .github/ISSUE_TEMPLATE/question.md
           test -f .github/ISSUE_TEMPLATE/config.yml
           test -f .github/PULL_REQUEST_TEMPLATE/default.md
           test -f .github/FUNDING.yml

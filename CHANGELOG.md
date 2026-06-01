@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Added `docs/QUICKSTART.md`, `docs/FAQ.md`, and `docs/GLOSSARY.md` for newcomer onboarding.
+- Added `GOVERNANCE.md` documenting roles, decision classes, and release authority.
+- Added `CITATION.cff` for citable project metadata.
+- Added a question issue template for usage questions.
+- Added an OpenSSF Scorecard workflow for supply-chain posture reporting.
+- Extended Dependabot to cover Docker base images alongside GitHub Actions.
+
 ## [1.4.0] - 2026-06-01
 
 ### Added

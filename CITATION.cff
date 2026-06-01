@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use HADES, please cite it using the metadata below."
+title: "HADES — Hermes Agent Docker Environment Script"
+abstract: "A cross-platform Docker installer and runtime wrapper for Hermes Agent. Reproducible one-command install with persistent state, localhost-only API, and unified CLI operations."
+type: software
+authors:
+  - alias: "lunaticbugbear"
+    name-particle: ""
+    given-names: "lunaticbugbear"
+    family-names: ""
+license: MIT
+repository-code: "https://github.com/lunaticbugbear/hades-hermes-agent"
+url: "https://github.com/lunaticbugbear/hades-hermes-agent"
+keywords:
+  - docker
+  - installer
+  - hermes-agent
+  - llm
+  - cli
+  - ai-agent
+  - cross-platform

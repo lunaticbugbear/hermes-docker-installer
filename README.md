@@ -12,6 +12,7 @@ curl -fsSL https://raw.githubusercontent.com/lunaticbugbear/hades-hermes-agent/m
 
 <a href="https://github.com/lunaticbugbear/hades-hermes-agent/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/lunaticbugbear/hades-hermes-agent?style=social"></a>
 <a href="https://github.com/lunaticbugbear/hades-hermes-agent/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/lunaticbugbear/hades-hermes-agent/actions/workflows/ci.yml/badge.svg"></a>
+<a href="https://github.com/lunaticbugbear/hades-hermes-agent/actions/workflows/scorecard.yml"><img alt="OpenSSF Scorecard" src="https://github.com/lunaticbugbear/hades-hermes-agent/actions/workflows/scorecard.yml/badge.svg"></a>
 <a href="https://github.com/lunaticbugbear/hades-hermes-agent/releases"><img alt="Release" src="https://img.shields.io/github/v/release/lunaticbugbear/hades-hermes-agent"></a>
 <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 <a href="SECURITY.md"><img alt="Security policy" src="https://img.shields.io/badge/security-policy-blue"></a>
@@ -215,11 +216,17 @@ A daily workflow checks for new Hermes Agent releases and opens a PR to bump the
 
 ## Docs
 
+**New here?** Start with [Quickstart](docs/QUICKSTART.md), then [FAQ](docs/FAQ.md). Hit a term you don't know? [Glossary](docs/GLOSSARY.md).
+
+- [Quickstart](docs/QUICKSTART.md) — three steps to a running install
+- [FAQ](docs/FAQ.md) — common questions, plain answers
+- [Glossary](docs/GLOSSARY.md) — what HADES jargon means
 - [Architecture](docs/ARCHITECTURE.md) — runtime layout, lifecycle, security model
 - [Operations](docs/OPERATIONS.md) — triage playbook, maintainer tasks, recovery
 - [Release Process](docs/RELEASE_PROCESS.md) — tagging, publishing, verification
 - [Release Verification](docs/RELEASE_VERIFICATION.md) — asset verification checklist
 - [Roadmap](ROADMAP.md) — public backlog and maintainer priorities
+- [Governance](GOVERNANCE.md) — how decisions get made
 - [Maintainers](MAINTAINERS.md) — ownership, review scope, platform expectations
 - [Contributing](CONTRIBUTING.md) — validation and review expectations
 - [Support](SUPPORT.md) — support path and issue requirements
