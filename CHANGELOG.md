@@ -4,9 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-06-01
+
 ### Changed
 - Bumped pinned upstream Hermes Agent version from `v2026.5.29` to `v2026.5.29.2` in `install.sh`, `install.ps1`, and `.env.template`.
 - Bumped `github/codeql-action` from `v3` to `v4` in the OpenSSF Scorecard workflow.
+- Restructured `README.md` for enterprise clarity and newbie onboarding: table of contents, Requirements section, consolidated value proposition, Security and trust section, and Contributing pointer.
+
+### Removed
+- Deleted stale branches (`openai-oss-application-readiness`, `lunaticbugbear-patch-1`, `chore/bump-hermes-v2026.5.29.2`) now subsumed by `main`.
 
 ## [1.4.1] - 2026-06-01
 
